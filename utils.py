@@ -5,7 +5,7 @@ import numpy as np
 from dataclasses import dataclass, field
 
 
-def set_seed(seed):
+def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -14,6 +14,21 @@ def set_seed(seed):
 
 def get_device():
     return 'cuda' if torch.cuda.is_available() else 'cpu'
+
+
+def debug_print_hf_dataset_sample(hf_dataset, tokenizer):
+    for sample in hf_dataset:
+        print("First sample:")
+        print(sample)
+
+        input_ids = sample['input_ids']
+        print("Encoded ids:")
+        print(input_ids)
+
+        decoded = tokenizer.decode(input_ids)
+        print("Decoded ids:")
+        print(decoded)
+        break
 
 
 @dataclass
@@ -29,6 +44,9 @@ class ModelArguments:
     )
     tokenizer_name: Optional[str] = field(
         default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
+    )
+    hp_search: Optional[bool] = field(
+        default=False, metadata={"help": "Whether to perform grid-search or just train with given parameters"}
     )
 
 
