@@ -13,7 +13,7 @@ MODEL_NAME="KB/bert-base-swedish-cased"
 # MODEL_NAME="KBLab/megatron-bert-large-swedish-cased-165k"
 # --eval_steps 200 \
 
-run_cmd="python bert/finetune_swe_paraphrase.py
+run_cmd="python3 bert/finetune_swe_paraphrase.py
         --model_name_or_path ${MODEL_NAME} \
         --output_dir ./results \
         --per_device_train_batch_size 32 \

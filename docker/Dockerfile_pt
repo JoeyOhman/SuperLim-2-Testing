@@ -1,0 +1,9 @@
+FROM nvcr.io/nvidia/pytorch:22.08-py3
+# COPY ../requirements.txt .
+WORKDIR /workdir/
+# RUN chown $(whoami) /workdir
+RUN git config --global --add safe.directory /workdir
+COPY requirements.txt /workdir/requirements.txt
+RUN pip install -r requirements.txt
+# WORKDIR /workdir
+EXPOSE 13377
