@@ -1,6 +1,10 @@
 #!/bin/bash
 
-export WANDB_MODE=offline
+export WANDB_ENTITY=joeyohman
+export WANDB_PROJECT=SuperLim2
+api_key=$(cat api_wandb_key.txt)
+export WANDB_API_KEY=${api_key}
+# export WANDB_MODE=offline
 # export WANDB_DISABLED=true
 
 # which python
@@ -32,7 +36,8 @@ run_cmd="python3 bert/finetune_swe_paraphrase.py
         --warmup_ratio 0.06 \
         --load_best_model_at_end 1 \
         --data_fraction 1.0 \
-        --hp_search 1
+        --hp_search 1 \
+        --report_to none
         "
 
 echo $run_cmd

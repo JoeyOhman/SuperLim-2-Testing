@@ -10,8 +10,8 @@ DATASET_PATH = os.path.join(JSONL_PATH, "SweParaphrase")
 def load_swe_paraphrase(data_fraction=1.0):
     # data_files = glob.glob(DATASET_PATH + "*.tsv")
     data_files = {
-        "train": os.path.join(DATASET_PATH, "train.tsv"),
-        "dev": os.path.join(DATASET_PATH, "dev.tsv")
+        "train": os.path.join(DATASET_PATH, "train.jsonl"),
+        "dev": os.path.join(DATASET_PATH, "dev.jsonl")
     }
 
     dataset = load_dataset('json', data_files=data_files)

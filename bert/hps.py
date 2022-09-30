@@ -1,10 +1,14 @@
 import os
 import shutil
 import json
+from datetime import datetime
 from typing import Optional
 
+import wandb
 from ray import tune
+from ray.air.callbacks.wandb import WandbLoggerCallback
 from ray.tune import CLIReporter
+# from ray.tune.integration.wandb import WandbLoggerCallback
 from transformers import Trainer
 from pathlib import Path
 
@@ -64,13 +68,16 @@ def save_best_model(best_run: BestRun, run_name: str) -> None:
 
 def tune_config_ray(trial):
     tune_config = {
-        "learning_rate": tune.grid_search([1e-5, 2e-5, 3e-5]),
+        "learning_rate": tune.grid_search([1e-5, 2e-5, 3e-5, 4e-5]),
         "per_device_train_batch_size": tune.grid_search([16, 32])
     }
     return tune_config
 
 
 def hp_tune(trainer: Trainer, model_name_or_path):
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d_%H:%M:%S")
+
     run_name = model_name_or_path.replace("/", "_")
     reporter = CLIReporter(
         parameter_columns={
@@ -94,11 +101,20 @@ def hp_tune(trainer: Trainer, model_name_or_path):
             "gpu": 1
         },
         keep_checkpoints_num=1,
+        checkpoint_score_attr="eval_loss",
         fail_fast=True,
         progress_reporter=reporter,
         local_dir=RAY_RESULTS_DIR,
         name=run_name,
-
+        callbacks=[WandbLoggerCallback(project="SuperLim2",
+                                       entity="joeyohman",
+                                       group=run_name + "_" + dt_string,
+                                       # api_key="0fc05c8f0ff7f9219378a081a69de35fc26c1011",
+                                       # api_key_file="wandb_key_file.txt",
+                                       # log_config=data_args.tune_alg == 'PBT',
+                                       # start_method="fork",
+                                       # settings=wandb.Settings(start_method="fork"),
+                                       )],
     )
 
     save_best_model(best_run, run_name)

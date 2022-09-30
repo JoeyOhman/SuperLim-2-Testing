@@ -1,12 +1,17 @@
+import os
+
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from transformers import HfArgumentParser, TrainingArguments, AutoModelForSequenceClassification, AutoConfig, \
     AutoTokenizer
 
 from bert.CustomTrainer import CustomTrainer
-from bert.hps import hp_tune
 from dataset_loaders.data_loader_swe_paraphrase import load_swe_paraphrase
 from utils import set_seed, get_device, ModelArguments, DataTrainingArguments
+
+# os.environ["WANDB_DISABLED"] = "true"
+
+from bert.hps import hp_tune
 
 
 def load_tokenizer(model_name_or_path):

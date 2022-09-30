@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # jsonl_files = [file_path.replace(TSV_PATH, JSONL_PATH) for file_path in tsv_files]
 
     for tsv_file in tsv_files:
-        out_file = tsv_file.replace(TSV_PATH, JSONL_PATH)
+        out_file = tsv_file.replace(TSV_PATH, JSONL_PATH).replace(".tsv", ".jsonl")
 
         # Parse input data
         with open(tsv_file, 'r') as f:
