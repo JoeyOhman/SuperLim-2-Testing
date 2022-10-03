@@ -10,11 +10,11 @@ def compute_rmse(predictions, labels):
 
 
 if __name__ == '__main__':
-    train_ds, dev_ds = load_swe_paraphrase()
+    train_ds, dev_ds, test_ds = load_swe_paraphrase()
     train_scores = [float(sample['Score']) for sample in train_ds]
-    dev_scores = [float(sample['Score']) for sample in dev_ds]
+    test_scores = [float(sample['Score']) for sample in test_ds]
     mean_score = np.mean(train_scores)
     # print(mean_score)
-    preds = [mean_score for _ in range(len(dev_scores))]
-    rmse = compute_rmse(preds, dev_scores)
+    preds = [mean_score for _ in range(len(test_scores))]
+    rmse = compute_rmse(preds, test_scores)
     print("RMSE:", rmse)

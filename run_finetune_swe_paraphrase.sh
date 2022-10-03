@@ -11,7 +11,8 @@ export WANDB_API_KEY=${api_key}
 # /bin/hostname -s
 export PYTHONPATH="${pwd}:$PYTHONPATH"
 
-MODEL_NAME="KB/bert-base-swedish-cased"
+# MODEL_NAME="KB/bert-base-swedish-cased"
+MODEL_NAME="albert-base-v2"
 # MODEL_NAME="microsoft/Multilingual-MiniLM-L12-H384"
 # MODEL_NAME="KBLab/megatron-bert-base-swedish-cased-600k"
 # MODEL_NAME="KBLab/megatron-bert-large-swedish-cased-165k"
@@ -37,7 +38,9 @@ run_cmd="python3 bert/finetune_swe_paraphrase.py
         --load_best_model_at_end 1 \
         --data_fraction 1.0 \
         --hp_search 1 \
-        --report_to none
+        --report_to none \
+        --quick_run 1 \
+        --task SweParaphrase
         "
 
 echo $run_cmd

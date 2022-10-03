@@ -1,34 +1,15 @@
-import os
+import json
 
 import numpy as np
 from sklearn.metrics import mean_squared_error
-from transformers import HfArgumentParser, TrainingArguments, AutoModelForSequenceClassification, AutoConfig, \
-    AutoTokenizer
+from transformers import AutoModelForSequenceClassification
 
 from bert.CustomTrainer import CustomTrainer
-from dataset_loaders.data_loader_swe_paraphrase import load_swe_paraphrase
-from utils import set_seed, get_device, ModelArguments, DataTrainingArguments
-
-# os.environ["WANDB_DISABLED"] = "true"
-
+from bert.bert_utils import load_tokenizer, load_config, load_model
 from bert.hps import hp_tune
-
-
-def load_tokenizer(model_name_or_path):
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-    return tokenizer
-
-
-def load_config(model_name_or_path):
-    config = AutoConfig.from_pretrained(model_name_or_path)
-    config.num_labels = 1
-    return config
-
-
-def load_model(model_name_or_path, config):
-    model = AutoModelForSequenceClassification.from_pretrained(model_name_or_path, config=config)
-    model.to(device)
-    return model
+from dataset_loaders.data_loader_swe_paraphrase import load_swe_paraphrase
+from paths import EXPERIMENT_MODELS_PATH_TEMPLATE, EXPERIMENT_METRICS_PATH_TEMPLATE
+from utils import set_seed, get_device, get_hf_args, task_to_info_dict
 
 
 def compute_metrics(eval_pred):
@@ -55,32 +36,37 @@ def pre_process_data(dataset_split, tokenizer, max_len):
     return dataset_split
 
 
-def create_dataset(data_args, tokenizer, max_seq_len):
-    train_ds, dev_ds = load_swe_paraphrase(data_args.data_fraction)
+def create_dataset(data_fraction, tokenizer, max_seq_len):
+    train_ds, dev_ds, test_ds = load_swe_paraphrase(data_fraction)
 
     print("Preprocessing train_ds")
     train_ds = pre_process_data(train_ds, tokenizer, max_seq_len)
     print("Preprocessing dev_ds")
     dev_ds = pre_process_data(dev_ds, tokenizer, max_seq_len)
+    print("Preprocessing test_ds")
+    test_ds = pre_process_data(test_ds, tokenizer, max_seq_len)
 
     train_ds_lens = [sample['input_ids'].shape[0] for sample in train_ds]
     print("Train ds, Max len:", max(train_ds_lens))
     print("Train ds, Mean len:", np.mean(train_ds_lens))
+    print(f"#samples:\ntrain={train_ds.num_rows}, dev={dev_ds.num_rows}, test={test_ds.num_rows}")
 
-    return train_ds, dev_ds
+    return train_ds, dev_ds, test_ds
 
 
 def main():
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    model_args, data_args, training_args = get_hf_args()
 
     model_name_or_path = model_args.model_name_or_path
     tokenizer = load_tokenizer(model_name_or_path)
-    config = load_config(model_name_or_path)
+    config = load_config(model_name_or_path, 1)
 
     max_seq_len = min(config.max_position_embeddings, data_args.max_input_length)
 
-    train_ds, val_ds = create_dataset(data_args, tokenizer, max_seq_len)
+    train_ds, val_ds, test_ds = create_dataset(data_args.data_fraction, tokenizer, max_seq_len)
+
+    # experiment_model_path = EXPERIMENT_MODELS_PATH_TEMPLATE.format(model=model_name_or_path, task=data_args.task)
+    experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=model_name_or_path, task=data_args.task)
 
     if model_args.hp_search:
         def model_init(trial=None):
@@ -88,7 +74,9 @@ def main():
 
         trainer = CustomTrainer.init_trainer(training_args, None, tokenizer, train_ds, val_ds, compute_metrics,
                                              model_init)
-        best_run, best_model_dir = hp_tune(trainer, model_args.model_name_or_path)
+        task_info = task_to_info_dict[data_args.task]
+        best_run, best_model_dir = hp_tune(trainer, model_args.model_name_or_path, data_args.task, data_args.quick_run,
+                                           task_info["metric"], task_info["direction"])
         best_model = load_model(best_model_dir, config)
         trainer = CustomTrainer.init_trainer(training_args, best_model, tokenizer, train_ds, val_ds, compute_metrics)
 
@@ -97,12 +85,20 @@ def main():
         trainer = CustomTrainer.init_trainer(training_args, model, tokenizer, train_ds, val_ds, compute_metrics)
         trainer.train()
 
-    metrics = trainer.evaluate()
-    trainer.log_metrics("eval", metrics)
+    metrics_eval = trainer.evaluate()
+    trainer.log_metrics("eval", metrics_eval)
 
-    # predictions, labels, metrics = trainer.predict(test_ds)
+    predictions, labels, metrics_test = trainer.predict(test_ds)
     # predictions = np.argmax(predictions, axis=1)
-    # trainer.log_metrics("test", metrics)
+    trainer.log_metrics("test", metrics_test)
+
+    metric_dict = {
+        "eval_mse": metrics_eval["eval_rmse"],
+        "test_mse": metrics_test["test_rmse"]
+    }
+
+    with open(experiment_metric_path + "/metrics.json", 'w') as f:
+        f.write(json.dumps(metric_dict, ensure_ascii=False, indent="\t"))
 
 
 if __name__ == '__main__':
