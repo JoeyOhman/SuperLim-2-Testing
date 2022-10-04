@@ -4,14 +4,16 @@ from datasets import load_dataset
 
 from paths import JSONL_PATH
 
-DATASET_PATH = os.path.join(JSONL_PATH, "SweParaphrase")
+# DATASET_PATH = os.path.join(JSONL_PATH, "SweParaphrase")
+DATASET_PATH_TEMPLATE = os.path.join(JSONL_PATH, "{task}")
 
 
-def load_swe_paraphrase(data_fraction=1.0):
+def load_dataset_by_task(task_name: str, data_fraction: float = 1.0):
     # data_files = glob.glob(DATASET_PATH + "*.tsv")
+    dataset_path = DATASET_PATH_TEMPLATE.format(task=task_name)
     data_files = {
-        "train": os.path.join(DATASET_PATH, "train.jsonl"),
-        "dev": os.path.join(DATASET_PATH, "dev.jsonl")
+        "train": os.path.join(dataset_path, "train.jsonl"),
+        "dev": os.path.join(dataset_path, "dev.jsonl")
     }
 
     dataset = load_dataset('json', data_files=data_files)
@@ -32,4 +34,4 @@ def load_swe_paraphrase(data_fraction=1.0):
 
 
 if __name__ == '__main__':
-    load_swe_paraphrase(1.0)
+    load_dataset_by_task("SweParaphrase", 1.0)

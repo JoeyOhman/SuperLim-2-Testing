@@ -26,7 +26,7 @@ class CustomTrainer(Trainer):
             tokenizer=tokenizer,
             data_collator=data_collator,
             compute_metrics=compute_metrics_fn,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=4, early_stopping_threshold=0.0)],
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=2, early_stopping_threshold=0.0)],
             model_init=model_init
         )
 

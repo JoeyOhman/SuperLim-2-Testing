@@ -15,7 +15,9 @@ if __name__ == '__main__':
 
         # Parse input data
         with open(tsv_file, 'r') as f:
-            read_tsv = csv.reader(f, delimiter="\t", quotechar='"')
+            # Had to remove " as quotechar for one particular sample to work, which included a single double-quote
+            read_tsv = csv.reader(f, delimiter="\t", quotechar=None)
+            # read_tsv = csv.reader(f, delimiter="\t")
 
             rows = []
             for row in read_tsv:

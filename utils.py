@@ -6,12 +6,6 @@ from dataclasses import dataclass, field
 from transformers import HfArgumentParser, TrainingArguments
 
 
-# Direction (min or max) is whether the optimization should minimize or maximize the metric
-task_to_info_dict = {
-    "SweParaphrase": {"metric": "rmse", "direction": "min"}
-}
-
-
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)

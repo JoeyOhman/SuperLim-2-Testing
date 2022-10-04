@@ -7,7 +7,7 @@ from transformers import AutoModelForSequenceClassification
 from bert.CustomTrainer import CustomTrainer
 from bert.bert_utils import load_tokenizer, load_config, load_model
 from bert.hps import hp_tune
-from dataset_loaders.data_loader_swe_paraphrase import load_swe_paraphrase
+from dataset_loaders.dataset_loader import load_dataset_by_task
 from paths import EXPERIMENT_MODELS_PATH_TEMPLATE, EXPERIMENT_METRICS_PATH_TEMPLATE
 from utils import set_seed, get_device, get_hf_args, task_to_info_dict
 
@@ -37,7 +37,7 @@ def pre_process_data(dataset_split, tokenizer, max_len):
 
 
 def create_dataset(data_fraction, tokenizer, max_seq_len):
-    train_ds, dev_ds, test_ds = load_swe_paraphrase(data_fraction)
+    train_ds, dev_ds, test_ds = load_dataset_by_task("SweParaphrase", data_fraction)
 
     print("Preprocessing train_ds")
     train_ds = pre_process_data(train_ds, tokenizer, max_seq_len)
@@ -81,7 +81,7 @@ def main():
         trainer = CustomTrainer.init_trainer(training_args, best_model, tokenizer, train_ds, val_ds, compute_metrics)
 
     else:
-        model = load_model(model_name_or_path, config)
+        model = load_model(model_name_or_path, config=config)
         trainer = CustomTrainer.init_trainer(training_args, model, tokenizer, train_ds, val_ds, compute_metrics)
         trainer.train()
 
