@@ -133,4 +133,5 @@ dmypy.json
 data/
 results/
 wandb/
+logs/
 api_wandb_key.txt

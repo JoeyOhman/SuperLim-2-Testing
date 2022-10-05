@@ -13,9 +13,12 @@ export PYTHONPATH="${pwd}:$PYTHONPATH"
 
 pip install evaluate
 
+mkdir -p logs
+log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S").txt"
+
 run_cmd="python3 bert/bert_experiment_driver.py"
 
 echo $run_cmd
-$run_cmd
+$run_cmd &> ${log_file_path}
 
 ./clear_ray_results.sh
