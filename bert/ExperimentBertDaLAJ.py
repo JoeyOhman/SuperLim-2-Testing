@@ -1,3 +1,5 @@
+from collections import Counter
+
 from datasets import Dataset
 import numpy as np
 
@@ -17,11 +19,17 @@ class ExperimentBertDaLAJ(ExperimentBert):
             lambda sample: tokenizer(sample['text'], truncation=True, max_length=max_len),
             batched=True, num_proc=4)
 
-        dataset_split.set_format(type='torch', columns=['input_ids', 'token_type_ids', 'attention_mask', 'labels'])
+        features = list(dataset_split.features.keys())
+        columns = ['input_ids', 'attention_mask', 'labels']
+        if 'token_type_ids' in features:
+            columns.append('token_type_ids')
+        dataset_split.set_format(type='torch', columns=columns)
+
         return dataset_split
 
     @staticmethod
     def _reformat_data(dataset_split):
+
         new_dataset_dict = {
             "text": [],
             "labels": []

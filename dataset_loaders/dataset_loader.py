@@ -19,6 +19,7 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0):
     }
 
     # dataset = load_dataset('json', data_files=data_files)
+    # dataset = load_dataset('csv', data_files=data_files, delimiter="\t")
     dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
     train_ds, dev_ds = dataset['train'], dataset['dev']
 

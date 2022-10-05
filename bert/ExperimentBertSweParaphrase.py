@@ -19,7 +19,12 @@ class ExperimentBertSweParaphrase(ExperimentBert):
         # Could use batched=True here and do float conversion in list comprehension
         dataset_split = dataset_split.map(lambda sample: {'labels': float(sample['Score'])}, batched=False, num_proc=4)
 
-        dataset_split.set_format(type='torch', columns=['input_ids', 'token_type_ids', 'attention_mask', 'labels'])
+        features = list(dataset_split.features.keys())
+        columns = ['input_ids', 'attention_mask', 'labels']
+        if 'token_type_ids' in features:
+            columns.append('token_type_ids')
+        dataset_split.set_format(type='torch', columns=columns)
+
         dataset_split = dataset_split.remove_columns(['Genre', 'File', 'Sentence 1', 'Sentence 2', 'Score'])
         return dataset_split
 
@@ -42,5 +47,5 @@ class ExperimentBertSweParaphrase(ExperimentBert):
 
 
 if __name__ == '__main__':
-    bert_swepara = ExperimentBertSweParaphrase("albert-base-v2", 1.0, 128, True)
+    bert_swepara = ExperimentBertSweParaphrase("albert-base-v2", 1.0, False, True)
     bert_swepara.run()

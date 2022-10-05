@@ -6,20 +6,34 @@ from bert.ExperimentBertSweParaphrase import ExperimentBertSweParaphrase
 def main():
     data_fraction = 1.0
     quick_run = False
-    hps = False
+    hps = True
 
-    ExperimentBertSweFAQ("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
-    exit()
+    # ExperimentBertDaLAJ("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
+    # ExperimentBertSweParaphrase("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
+    # ExperimentBertSweFAQ("xlm-roberta-base", data_fraction, False, quick_run).run()
+    # ExperimentBertSweFAQ("KB/bert-base-swedish-cased", data_fraction, False, quick_run).run()
+    # exit()
 
-    ExperimentBertSweParaphrase("albert-base-v2", data_fraction, hps, quick_run).run()
-    ExperimentBertSweParaphrase("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
-    ExperimentBertDaLAJ("albert-base-v2", data_fraction, hps, quick_run).run()
-    ExperimentBertDaLAJ("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
+    models = [
+        "KB/bert-base-swedish-cased",
+        "KBLab/bert-base-swedish-cased-new",
+        "KBLab/megatron-bert-base-swedish-cased-600k",
+        "KBLab/megatron-bert-large-swedish-cased-165k",
+        "AI-Nordics/bert-large-swedish-cased",
+        "xlm-roberta-base",
+    ]
+    for model in models:
+        ExperimentBertSweParaphrase(model, data_fraction, hps, quick_run).run()
+        ExperimentBertDaLAJ(model, data_fraction, hps, quick_run).run()
+        ExperimentBertSweFAQ(model, data_fraction, hps, quick_run).run()
 
-    # TODO: make some wrapper func for run that also writes the results to correct place
-    # TODO: maybe write everything from there, now hps is writing config I think
+    # ExperimentBertSweFAQ("AI-Nordics/bert-large-swedish-cased", data_fraction, hps, quick_run).run()
+    # ExperimentBertSweFAQ("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
 
-    # Add more models + tasks here
+    # ExperimentBertSweParaphrase("albert-base-v2", data_fraction, hps, quick_run).run()
+    # ExperimentBertSweParaphrase("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
+    # ExperimentBertDaLAJ("albert-base-v2", data_fraction, hps, quick_run).run()
+    # ExperimentBertDaLAJ("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
 
 
 if __name__ == '__main__':
