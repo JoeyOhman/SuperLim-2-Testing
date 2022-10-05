@@ -11,11 +11,11 @@ export WANDB_API_KEY=${api_key}
 # /bin/hostname -s
 export PYTHONPATH="${pwd}:$PYTHONPATH"
 
+pip install evaluate
+
 run_cmd="python3 bert/bert_experiment_driver.py"
 
 echo $run_cmd
 $run_cmd
 
-
-echo "Clearing ray HPO checkpoints!"
 ./clear_ray_results.sh

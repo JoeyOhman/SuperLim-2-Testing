@@ -22,7 +22,8 @@ def _compute_metrics_accuracy(preds_labels_tuple):
     predictions, labels = preds_labels_tuple
     predictions = np.argmax(predictions, axis=1)
     acc = accuracy_metric.compute(references=labels, predictions=predictions)
-    return {"accuracy": acc}
+    # return {"accuracy": acc}
+    return acc
 
 
 def _compute_metrics_f1(preds_labels_tuple):
@@ -30,7 +31,8 @@ def _compute_metrics_f1(preds_labels_tuple):
     predictions = np.argmax(predictions, axis=1)
     # Macro gives equal weight to each class, i.e. not taking into account class imbalance
     f1 = f1_metric.compute(references=labels, predictions=predictions, average='macro')
-    return {"f1": f1}
+    # return {"f1": f1}
+    return f1
 
 
 metric_to_compute_fun = {

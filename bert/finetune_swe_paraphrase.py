@@ -8,7 +8,6 @@ from bert.CustomTrainer import CustomTrainer
 from bert.bert_utils import load_tokenizer, load_config, load_model
 from bert.hps import hp_tune
 from dataset_loaders.dataset_loader import load_dataset_by_task
-from paths import EXPERIMENT_MODELS_PATH_TEMPLATE, EXPERIMENT_METRICS_PATH_TEMPLATE
 from utils import set_seed, get_device, get_hf_args, task_to_info_dict
 
 

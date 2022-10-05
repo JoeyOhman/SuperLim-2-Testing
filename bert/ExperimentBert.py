@@ -13,7 +13,8 @@ from utils import get_device, get_hf_args
 # Works for all BERT models, but need to be subclasses for each task
 class ExperimentBert(Experiment, ABC):
 
-    def __init__(self, task_name: str, model_name: str, data_fraction: float, max_input_length: int, quick_run: bool):
+    def __init__(self, task_name: str, model_name: str, data_fraction: float, max_input_length: int, hps: bool,
+                 quick_run: bool):
         super().__init__(task_name, model_name, data_fraction)
 
         # Arguments that are not covered by HPO
@@ -36,6 +37,7 @@ class ExperimentBert(Experiment, ABC):
         )
         self.training_args = training_arguments
         self.max_input_length = max_input_length
+        self.hps = hps
         self.quick_run = quick_run
         if quick_run:
             self.training_args.num_train_epochs = 2
@@ -60,7 +62,7 @@ class ExperimentBert(Experiment, ABC):
         model.to(get_device())
         return model
 
-    def _run_hpo(self, config, tokenizer, train_ds, val_ds):
+    def _run_hps(self, config, tokenizer, train_ds, val_ds):
         def _model_init(trial=None):
             return AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config)
 
@@ -71,6 +73,13 @@ class ExperimentBert(Experiment, ABC):
         best_model = self._load_model(config, best_model_dir)
         trainer = CustomTrainer.init_trainer(self.training_args, best_model, tokenizer, train_ds, val_ds,
                                              self._compute_metrics)
+        return trainer
+
+    def _run_no_hps(self, config, tokenizer, train_ds, val_ds):
+        model = self._load_model(config)
+        trainer = CustomTrainer.init_trainer(self.training_args, model, tokenizer, train_ds, val_ds,
+                                             self._compute_metrics)
+        trainer.train()
         return trainer
 
     def _evaluate(self, trainer, test_ds):
@@ -98,7 +107,10 @@ class ExperimentBert(Experiment, ABC):
 
         train_ds, val_ds, test_ds = self.create_dataset(tokenizer, max_seq_len)
 
-        trainer = self._run_hpo(config, tokenizer, train_ds, val_ds)
+        if self.hps:
+            trainer = self._run_hps(config, tokenizer, train_ds, val_ds)
+        else:
+            trainer = self._run_no_hps(config, tokenizer, train_ds, val_ds)
 
         metric_dict = self._evaluate(trainer, test_ds)
 

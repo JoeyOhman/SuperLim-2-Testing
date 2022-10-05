@@ -46,5 +46,4 @@ run_cmd="python3 bert/finetune_swe_paraphrase.py
 echo $run_cmd
 $run_cmd
 
-echo "Clearing ray HPO checkpoints!"
 ./clear_ray_results.sh

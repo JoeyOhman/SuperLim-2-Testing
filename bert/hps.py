@@ -12,7 +12,7 @@ from pathlib import Path
 
 from transformers.trainer_utils import BestRun
 
-from paths import RAY_RESULTS_PATH, EXPERIMENT_MODELS_PATH_TEMPLATE, EXPERIMENT_METRICS_PATH_TEMPLATE
+from paths import RAY_RESULTS_PATH, get_experiment_metrics_path, get_experiment_models_path
 
 
 def get_immediate_child_directory_with_sub_name(parent_dir: str, sub_name: str) -> Optional[str]:
@@ -86,8 +86,11 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, quick_run
     now = datetime.now()
     dt_string = now.strftime("%Y-%m-%d_%H:%M:%S")
 
-    experiment_model_path = EXPERIMENT_MODELS_PATH_TEMPLATE.format(model=model_name_or_path, task=task_name)
-    experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=model_name_or_path, task=task_name)
+    # experiment_model_path = EXPERIMENT_MODELS_PATH_TEMPLATE.format(model=model_name_or_path, task=task_name)
+    # experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=model_name_or_path, task=task_name)
+
+    experiment_model_path = get_experiment_models_path(task_name, model_name_or_path)
+    experiment_metric_path = get_experiment_metrics_path(task_name, model_name_or_path)
 
     tune_config = tune_config_ray_quick if quick_run else tune_config_ray
 

@@ -4,10 +4,10 @@ from bert.ExperimentBert import ExperimentBert
 
 class ExperimentBertSweParaphrase(ExperimentBert):
 
-    def __init__(self, model_name: str, data_fraction: float, quick_run: bool):
+    def __init__(self, model_name: str, data_fraction: float, hps: bool, quick_run: bool):
         task_name = "SweParaphrase"
         max_input_length = 128
-        super().__init__(task_name, model_name, data_fraction, max_input_length, quick_run)
+        super().__init__(task_name, model_name, data_fraction, max_input_length, hps, quick_run)
 
     @staticmethod
     def _pre_process_data(dataset_split, tokenizer, max_len):

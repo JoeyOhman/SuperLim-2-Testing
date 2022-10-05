@@ -1,15 +1,17 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Any
 
 from compute_metrics import metric_to_compute_fun
 from dataset_loaders.dataset_loader import load_dataset_by_task
-from paths import EXPERIMENT_METRICS_PATH_TEMPLATE
+from paths import get_experiment_metrics_path
+from pathlib import Path
 
 # Direction (min or max) is whether the optimization should minimize or maximize the metric
 task_to_info_dict = {
     "SweParaphrase": {"num_classes": 1, "metric": "rmse", "direction": "min"},
-    "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max"}
+    "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max"},
+    "SweFAQ": {"num_classes": 2, "metric": "accuracy", "direction": "max"},
 }
 
 
@@ -31,8 +33,15 @@ class Experiment(ABC):
         pass
 
     def run(self) -> None:
-        metric_dict = self.run_impl()
-        experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=self.model_name, task=self.task_name)
+        metric_dict: Dict[str, Any] = {
+            "task": self.task_name,
+            "model": self.model_name
+        }
+        results_metric_dict = self.run_impl()
+        metric_dict.update(results_metric_dict)
+        # experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=self.model_name, task=self.task_name)
+        experiment_metric_path = get_experiment_metrics_path(self.task_name,  self.model_name)
+        Path(experiment_metric_path).mkdir(parents=True, exist_ok=True)
         with open(experiment_metric_path + "/metrics.json", 'w') as f:
             f.write(json.dumps(metric_dict, ensure_ascii=False, indent="\t"))
 
