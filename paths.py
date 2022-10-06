@@ -11,8 +11,11 @@ RESULTS_PATH = os.path.join(ABSOLUTE_PATH_PROJ, "results")
 RAY_RESULTS_PATH = os.path.join(RESULTS_PATH, "ray_results")
 
 EXPERIMENTS_PATH = os.path.join(RESULTS_PATH, "experiments")
-EXPERIMENT_METRICS_PATH_TEMPLATE = os.path.join(EXPERIMENTS_PATH, "metrics", "{task}", "{model}")
-EXPERIMENT_MODELS_PATH_TEMPLATE = os.path.join(EXPERIMENTS_PATH, "models", "{task}", "{model}")
+METRICS_PATH = os.path.join(EXPERIMENTS_PATH, "metrics")
+MODELS_PATH = os.path.join(EXPERIMENTS_PATH, "models")
+
+EXPERIMENT_METRICS_PATH_TEMPLATE = os.path.join(METRICS_PATH, "{task}", "{model}")
+EXPERIMENT_MODELS_PATH_TEMPLATE = os.path.join(MODELS_PATH, "{task}", "{model}")
 
 
 def get_experiment_metrics_path(task: str, model: str) -> str:
