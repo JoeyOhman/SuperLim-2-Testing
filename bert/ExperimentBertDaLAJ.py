@@ -1,6 +1,3 @@
-from collections import Counter
-
-from datasets import Dataset
 import numpy as np
 
 from bert.ExperimentBert import ExperimentBert
@@ -27,27 +24,9 @@ class ExperimentBertDaLAJ(ExperimentBert):
 
         return dataset_split
 
-    @staticmethod
-    def _reformat_data(dataset_split):
-
-        new_dataset_dict = {
-            "text": [],
-            "labels": []
-        }
-        for sample in dataset_split:
-            new_dataset_dict["text"].append(sample["original sentence"])
-            new_dataset_dict["labels"].append(0)
-            new_dataset_dict["text"].append(sample["corrected sentence"])
-            new_dataset_dict["labels"].append(1)
-
-        return Dataset.from_dict(new_dataset_dict)
 
     def create_dataset(self, tokenizer, max_seq_len: int):
         train_ds, dev_ds, test_ds = self._load_data()
-
-        train_ds = self._reformat_data(train_ds)
-        dev_ds = self._reformat_data(dev_ds)
-        test_ds = self._reformat_data(test_ds)
 
         print("Preprocessing train_ds")
         train_ds = self._pre_process_data(train_ds, tokenizer, max_seq_len)

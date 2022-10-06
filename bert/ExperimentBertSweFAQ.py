@@ -1,7 +1,3 @@
-import random
-from collections import defaultdict
-
-from datasets import Dataset
 import numpy as np
 
 from bert.ExperimentBert import ExperimentBert
@@ -28,52 +24,8 @@ class ExperimentBertSweFAQ(ExperimentBert):
 
         return dataset_split
 
-    @staticmethod
-    def _reformat_data(dataset_split):
-        new_dataset_dict = {
-            "question": [],
-            "answer": [],
-            "labels": []
-        }
-
-        categories = defaultdict(list)
-        for sample in dataset_split:
-            cat_id = sample["category_id"]
-            categories[cat_id].append(sample)
-
-        # Category probably not needed
-        for category, samples in categories.items():
-            for idx, sample in enumerate(samples):
-                # Positive sample
-                q, a = sample["question"], sample["correct_answer"]
-                new_dataset_dict["question"].append(q)
-                new_dataset_dict["answer"].append(a)
-                new_dataset_dict["labels"].append(1)
-
-                # Negative samples (might need to under sample here)
-                other_indices = [i for i in range(len(samples)) if i != idx]
-                choice = random.choice(other_indices)
-
-                incorrect_answer = samples[choice]["correct_answer"]
-                new_dataset_dict["question"].append(q)
-                new_dataset_dict["answer"].append(incorrect_answer)
-                new_dataset_dict["labels"].append(0)
-                # for other_idx, other_sample in enumerate(samples):
-                #     if idx == other_idx:
-                #         continue
-                #     incorrect_answer = other_sample["correct_answer"]
-                #     new_dataset_dict["question"].append(q)
-                #     new_dataset_dict["answer"].append(incorrect_answer)
-                #     new_dataset_dict["labels"].append(0)
-
-        return Dataset.from_dict(new_dataset_dict)
-
     def create_dataset(self, tokenizer, max_seq_len: int):
         train_ds, dev_ds, test_ds = self._load_data()
-
-        train_ds = self._reformat_data(train_ds)
-        dev_ds = self._reformat_data(dev_ds)
-        test_ds = self._reformat_data(test_ds)
 
         print("Preprocessing train_ds")
         train_ds = self._pre_process_data(train_ds, tokenizer, max_seq_len)
