@@ -1,3 +1,6 @@
+import gc
+import time
+
 from bert.ExperimentBertDaLAJ import ExperimentBertDaLAJ
 from bert.ExperimentBertSweFAQ import ExperimentBertSweFAQ
 from bert.ExperimentBertSweParaphrase import ExperimentBertSweParaphrase
@@ -15,7 +18,7 @@ def main():
     # exit()
 
     models = [
-        "KB/bert-base-swedish-cased",
+        # "KB/bert-base-swedish-cased",
         "KBLab/bert-base-swedish-cased-new",
         "KBLab/megatron-bert-base-swedish-cased-600k",
         "KBLab/megatron-bert-large-swedish-cased-165k",
@@ -24,8 +27,14 @@ def main():
     ]
     for model in models:
         ExperimentBertSweParaphrase(model, data_fraction, hps, quick_run).run()
+        gc.collect()
+        time.sleep(5)
         ExperimentBertDaLAJ(model, data_fraction, hps, quick_run).run()
+        gc.collect()
+        time.sleep(5)
         ExperimentBertSweFAQ(model, data_fraction, hps, quick_run).run()
+        gc.collect()
+        time.sleep(5)
 
     # ExperimentBertSweFAQ("AI-Nordics/bert-large-swedish-cased", data_fraction, hps, quick_run).run()
     # ExperimentBertSweFAQ("KB/bert-base-swedish-cased", data_fraction, hps, quick_run).run()
