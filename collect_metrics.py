@@ -9,8 +9,8 @@ from paths import METRICS_PATH, RESULTS_PATH
 
 def load_all_metric_dicts():
     metric_dicts = []
-    # for path in Path(METRICS_PATH).rglob('metrics.json'):
-    for path in Path(RESULTS_PATH + '/downloaded_metrics/').rglob('*.json'):
+    for path in Path(METRICS_PATH).rglob('metrics.json'):
+    # for path in Path(RESULTS_PATH + '/downloaded_metrics/').rglob('*.json'):
         print(path.name)
         with open(path, 'r') as f:
             json_dict = json.load(f)

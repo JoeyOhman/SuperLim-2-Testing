@@ -5,24 +5,25 @@ from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassifi
 
 from Experiment import Experiment
 from bert.CustomTrainer import CustomTrainer
+from bert.bert_utils import find_best_model_and_clean
 from bert.hps import hp_tune
-from paths import RESULTS_PATH
-from utils import get_device, get_hf_args
+from paths import TRAINER_OUTPUT_PATH
+from utils import get_device
 
 
 # Works for all BERT models, but need to be subclasses for each task
 class ExperimentBert(Experiment, ABC):
 
-    def __init__(self, task_name: str, model_name: str, data_fraction: float, max_input_length: int, hps: bool,
-                 quick_run: bool):
+    def __init__(self, task_name: str, model_name: str, data_fraction: float, hps: bool, quick_run: bool):
         super().__init__(task_name, model_name, data_fraction)
 
         # Arguments that are not covered by HPO
         training_arguments = TrainingArguments(
-            output_dir=RESULTS_PATH,
+            output_dir=TRAINER_OUTPUT_PATH,
             per_device_eval_batch_size=64,
             gradient_accumulation_steps=1,
             num_train_epochs=10,
+            # num_train_epochs=10,
             weight_decay=0.1,
             warmup_ratio=0.06,
             evaluation_strategy="epoch",
@@ -32,16 +33,19 @@ class ExperimentBert(Experiment, ABC):
             fp16=True,
             disable_tqdm=True,
             load_best_model_at_end=True,
-            report_to=None,
-            # report_to=["none"]
+            metric_for_best_model="eval_" + self.metric,
+            greater_is_better=self.direction == "max",
+            # load_best_model_at_end=False,
+            report_to=None
         )
         self.training_args = training_arguments
-        self.max_input_length = max_input_length
+        # self.max_input_length = max_input_length
         self.hps = hps
         self.quick_run = quick_run
         if quick_run:
             self.training_args.num_train_epochs = 2
-            self.data_fraction = 0.02
+            self.data_fraction = 0.05
+            self.max_input_length = 64
 
     @abstractmethod
     def create_dataset(self, tokenizer, max_seq_len: int):
@@ -68,8 +72,10 @@ class ExperimentBert(Experiment, ABC):
 
         trainer = CustomTrainer.init_trainer(self.training_args, None, tokenizer, train_ds, val_ds,
                                              self._compute_metrics, _model_init)
-        best_run, best_model_dir = hp_tune(trainer, self.model_name, self.task_name, self.quick_run,
-                                           self.metric, self.direction)
+
+        best_run = hp_tune(trainer, self.model_name, self.task_name, self.quick_run, self.metric, self.direction)
+
+        best_model_dir = find_best_model_and_clean(best_run, self.direction, self.task_name, self.model_name)
         best_model = self._load_model(config, best_model_dir)
         trainer = CustomTrainer.init_trainer(self.training_args, best_model, tokenizer, train_ds, val_ds,
                                              self._compute_metrics)
@@ -91,9 +97,10 @@ class ExperimentBert(Experiment, ABC):
         trainer.log_metrics("test", metrics_test)
 
         metric_dict = {
-            "metric": self.metric,
             "eval": metrics_eval["eval_" + self.metric],
-            "test": metrics_test["test_" + self.metric]
+            "test": metrics_test["test_" + self.metric],
+            "eval_metrics_obj": metrics_eval,
+            "test_metrics_obj": metrics_test
         }
 
         return metric_dict
@@ -103,7 +110,9 @@ class ExperimentBert(Experiment, ABC):
         # model_name_or_path = model_args.model_name_or_path
         tokenizer = self._load_tokenizer()
         config = self._load_config()
-        max_seq_len = min(config.max_position_embeddings, self.max_input_length)
+        max_seq_len = config.max_position_embeddings
+        if self.quick_run:
+            max_seq_len = min(max_seq_len, self.max_input_length)
 
         train_ds, val_ds, test_ds = self.create_dataset(tokenizer, max_seq_len)
 

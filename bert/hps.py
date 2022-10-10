@@ -2,10 +2,11 @@ import os
 import shutil
 import json
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 
 from ray import tune
 from ray.air.callbacks.wandb import WandbLoggerCallback
+from ray.tune import Callback
 from ray.tune import CLIReporter
 from transformers import Trainer
 from pathlib import Path
@@ -13,6 +14,40 @@ from pathlib import Path
 from transformers.trainer_utils import BestRun
 
 from paths import RAY_RESULTS_PATH, get_experiment_metrics_path, get_experiment_models_path
+
+"""
+class ManualMetricsCallback(Callback):
+
+    def __init__(self, metric):
+        self.metric = metric
+        self.run_to_metric_history = {}
+
+    def on_trial_result(
+        self,
+        iteration: int,
+        trials: List["Trial"],
+        trial: "Trial",
+        result: Dict,
+        **info,
+    ):
+        # self.run_to_metric_history[]
+        # print("*" * 50)
+        # print("iteration:", iteration)
+        # print("result:", result)
+        # print("trial_id:", trial.trial_id)
+        # print("config:", trial.config)
+        # print("evaluated_params", trial.evaluated_params)
+        # print("best_result:", trial.best_result)
+        # print("metric_analysis:", trial.metric_analysis)
+        # print("param_config:", trial.param_config)
+        # print("trial.results:", trial.results)
+
+        trial_id = result["trial_id"]
+        epoch = result["epoch"]
+        eval_metric = result[self.metric]
+        eval_loss = result["eval_loss"]
+        hyperparams = result["config"]
+        # self.run_to_metric_history[]
 
 
 def get_immediate_child_directory_with_sub_name(parent_dir: str, sub_name: str) -> Optional[str]:
@@ -62,6 +97,7 @@ def save_best_model(best_run: BestRun, run_name: str, model_dir: str, metric_dir
     # Write hyperparameters as json pretty print
     with open(metric_dir + "/hyperparameters.json", 'w') as f:
         json.dump(best_run.hyperparameters, f, indent=True)
+"""
 
 
 def tune_config_ray(trial):
@@ -86,15 +122,11 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, quick_run
     now = datetime.now()
     dt_string = now.strftime("%Y-%m-%d_%H:%M:%S")
 
-    # experiment_model_path = EXPERIMENT_MODELS_PATH_TEMPLATE.format(model=model_name_or_path, task=task_name)
-    # experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=model_name_or_path, task=task_name)
-
-    experiment_model_path = get_experiment_models_path(task_name, model_name_or_path)
-    experiment_metric_path = get_experiment_metrics_path(task_name, model_name_or_path)
+    # experiment_model_path = get_experiment_models_path(task_name, model_name_or_path)
+    # experiment_metric_path = get_experiment_metrics_path(task_name, model_name_or_path)
 
     tune_config = tune_config_ray_quick if quick_run else tune_config_ray
 
-    # run_name = model_name_or_path.replace("/", "_")
     run_name = task_name + "_" + model_name_or_path.replace("/", "-")
     metrics_to_report = ["epoch", "eval_loss"]
     if metric is None:
@@ -112,7 +144,7 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, quick_run
         # metric_columns=[
         #     "epoch", "eval_loss", "eval_rmse"
         # ]
-        )
+    )
 
     best_run = trainer.hyperparameter_search(
         hp_space=tune_config,
@@ -133,13 +165,17 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, quick_run
         progress_reporter=reporter,
         local_dir=RAY_RESULTS_PATH,
         name=run_name,
-        callbacks=[WandbLoggerCallback(project="SuperLim2",
-                                       entity="joeyohman",
-                                       group=run_name + "_" + dt_string,
-                                       # settings=wandb.Settings(start_method="fork"),
-                                       )],
+        callbacks=[
+            # ManualMetricsCallback(metric),
+            WandbLoggerCallback(project="SuperLim2",
+                                entity="joeyohman",
+                                group=run_name + "_" + dt_string,
+                                # settings=wandb.Settings(start_method="fork"),
+                                )
+        ],
     )
 
-    save_best_model(best_run, run_name, experiment_model_path, experiment_metric_path)
+    # save_best_model(best_run, run_name, experiment_model_path, experiment_metric_path)
     # best_model_dir = BEST_TUNED_MODELS_PATH + "/" + run_name + "/model"
-    return best_run, experiment_model_path
+    # return best_run, experiment_model_path
+    return best_run

@@ -12,6 +12,16 @@ from paths import TSV_PATH
 DATASET_PATH_TEMPLATE = os.path.join(TSV_PATH, "{task}")
 
 
+def reformat_dataset_SweParaphrase(dataset):
+    dataset = dataset.rename_column("Score", "labels")
+    return dataset
+
+
+def reformat_dataset_ABSAbankImm(dataset):
+    dataset = dataset.rename_column("label", "labels")
+    return dataset
+
+
 def reformat_dataset_SweFAQ(dataset):
     new_dataset_dict = {
         "question": [],
@@ -71,29 +81,33 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0):
     dataset_path = DATASET_PATH_TEMPLATE.format(task=task_name)
     data_files = {
         "train": os.path.join(dataset_path, "train.tsv"),
-        "dev": os.path.join(dataset_path, "dev.tsv")
+        "dev": os.path.join(dataset_path, "dev.tsv"),
+        "test": os.path.join(dataset_path, "test.tsv")
     }
 
     # dataset = load_dataset('json', data_files=data_files)
     # dataset = load_dataset('csv', data_files=data_files, delimiter="\t")
     dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
-    train_ds, dev_ds = dataset['train'], dataset['dev']
+    train_ds, dev_ds, test_ds = dataset['train'], dataset['dev'], dataset['test']
 
     # Reformat raw data to training tasks
     task_to_reformat_fun = {
+        "SweParaphrase": reformat_dataset_SweParaphrase,
         "SweFAQ": reformat_dataset_SweFAQ,
-        "DaLAJ": reformat_dataset_DaLAJ
+        "DaLAJ": reformat_dataset_DaLAJ,
+        "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
     }
     format_fun = task_to_reformat_fun.get(task_name, None)
     if format_fun is not None:
         train_ds = format_fun(train_ds)
         dev_ds = format_fun(dev_ds)
+        test_ds = format_fun(test_ds)
 
     # For debugging: split dev set into dev and fake-test
-    num_test = int(len(dev_ds) / 3)
-    break_point_idx = len(dev_ds) - num_test
-    test_ds = dev_ds.select(range(break_point_idx, len(dev_ds)))
-    dev_ds = dev_ds.select(range(0, break_point_idx))
+    # num_test = int(len(dev_ds) / 3)
+    # break_point_idx = len(dev_ds) - num_test
+    # test_ds = dev_ds.select(range(break_point_idx, len(dev_ds)))
+    # dev_ds = dev_ds.select(range(0, break_point_idx))
 
     assert 0.0 < data_fraction <= 1.0, "data_fraction must be in range(0, 1]"
     if data_fraction < 1.0:

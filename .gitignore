@@ -135,3 +135,5 @@ results/
 wandb/
 logs/
 api_wandb_key.txt
+
+metrics.tar.gz

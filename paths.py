@@ -8,6 +8,7 @@ TSV_PATH = os.path.join(DATASET_PATH, "tsv")
 JSONL_PATH = os.path.join(DATASET_PATH, "jsonl")
 
 RESULTS_PATH = os.path.join(ABSOLUTE_PATH_PROJ, "results")
+TRAINER_OUTPUT_PATH = os.path.join(RESULTS_PATH, "trainer_output")
 RAY_RESULTS_PATH = os.path.join(RESULTS_PATH, "ray_results")
 
 EXPERIMENTS_PATH = os.path.join(RESULTS_PATH, "experiments")

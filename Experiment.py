@@ -10,8 +10,10 @@ from pathlib import Path
 # Direction (min or max) is whether the optimization should minimize or maximize the metric
 task_to_info_dict = {
     "SweParaphrase": {"num_classes": 1, "metric": "rmse", "direction": "min"},
+    # "SweParaphrase": {"num_classes": 1, "metric": "spearmanr", "direction": "max"},
     "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max"},
     "SweFAQ": {"num_classes": 2, "metric": "accuracy", "direction": "max"},
+    "ABSAbank-Imm": {"num_classes": 1, "metric": "rmse", "direction": "min"},
 }
 
 
@@ -35,7 +37,9 @@ class Experiment(ABC):
     def run(self) -> None:
         metric_dict: Dict[str, Any] = {
             "task": self.task_name,
-            "model": self.model_name
+            "model": self.model_name,
+            "metric": self.metric,
+            "direction": self.direction
         }
         results_metric_dict = self.run_impl()
         metric_dict.update(results_metric_dict)
