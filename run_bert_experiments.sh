@@ -20,8 +20,8 @@ run_cmd="python3 bert/bert_experiment_driver.py"
 
 echo $run_cmd
 echo "Writing output to: ${log_file_path}"
-# $run_cmd &> ${log_file_path}
-$run_cmd
+$run_cmd &> ${log_file_path}
+# $run_cmd
 
 ./clear_ray_results.sh
 

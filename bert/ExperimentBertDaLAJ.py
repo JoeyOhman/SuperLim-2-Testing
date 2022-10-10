@@ -16,7 +16,7 @@ class ExperimentBertDaLAJ(ExperimentBert):
             lambda sample: tokenizer(sample['text'], truncation=True, max_length=max_len),
             batched=True, num_proc=4)
 
-        dataset_split = dataset_split.map(lambda sample: {'labels': float(sample['label'])}, batched=False, num_proc=4)
+        # dataset_split = dataset_split.map(lambda sample: {'labels': float(sample['label'])}, batched=False, num_proc=4)
 
         features = list(dataset_split.features.keys())
         columns = ['input_ids', 'attention_mask', 'labels']
@@ -39,8 +39,8 @@ class ExperimentBertDaLAJ(ExperimentBert):
         test_ds = self._pre_process_data(test_ds, tokenizer, max_seq_len)
 
         train_ds_lens = [sample['input_ids'].shape[0] for sample in train_ds]
-        num_max_len = sum([1 if length == self.max_input_length else 0 for length in train_ds_lens])
-        print("Num samples that are max length:", num_max_len)
+        # num_max_len = sum([1 if length == self.max_input_length else 0 for length in train_ds_lens])
+        # print("Num samples that are max length:", num_max_len)
         print("Train ds, Max len:", max(train_ds_lens))
         print("Train ds, Mean len:", np.mean(train_ds_lens))
         print(f"#samples:\ntrain={train_ds.num_rows}, dev={dev_ds.num_rows}, test={test_ds.num_rows}")
