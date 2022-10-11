@@ -14,14 +14,19 @@ from utils import get_device
 # Works for all BERT models, but need to be subclasses for each task
 class ExperimentBert(Experiment, ABC):
 
-    def __init__(self, task_name: str, model_name: str, data_fraction: float, hps: bool, quick_run: bool):
+    def __init__(self, task_name: str, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool,
+                 quick_run: bool):
+        assert accumulation_steps == 1 or accumulation_steps % 2 == 0, "accumulation_steps must be 1, or multiple of 2"
         super().__init__(task_name, model_name, data_fraction)
 
         # Arguments that are not covered by HPO
         training_arguments = TrainingArguments(
+            learning_rate=1e-4,
             output_dir=TRAINER_OUTPUT_PATH,
-            per_device_eval_batch_size=64,
-            gradient_accumulation_steps=1,
+            per_device_train_batch_size=int(32 / accumulation_steps),
+            per_device_eval_batch_size=int(64 / accumulation_steps),
+            gradient_accumulation_steps=accumulation_steps,
+            eval_accumulation_steps=accumulation_steps,
             num_train_epochs=10,
             # num_train_epochs=10,
             weight_decay=0.1,
@@ -38,6 +43,7 @@ class ExperimentBert(Experiment, ABC):
             # load_best_model_at_end=False,
             report_to=None
         )
+        self.accumulation_steps = accumulation_steps
         self.training_args = training_arguments
         # self.max_input_length = max_input_length
         self.hps = hps
@@ -62,18 +68,21 @@ class ExperimentBert(Experiment, ABC):
 
     def _load_model(self, config, model_path=None):
         model_name = self.model_name if model_path is None else model_path
-        model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config)
+        model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config,
+                                                                   ignore_mismatched_sizes=True)
         model.to(get_device())
         return model
 
     def _run_hps(self, config, tokenizer, train_ds, val_ds):
         def _model_init(trial=None):
-            return AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config)
+            return AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
+                                                                      ignore_mismatched_sizes=True)
 
         trainer = CustomTrainer.init_trainer(self.training_args, None, tokenizer, train_ds, val_ds,
                                              self._compute_metrics, _model_init)
 
-        best_run = hp_tune(trainer, self.model_name, self.task_name, self.quick_run, self.metric, self.direction)
+        best_run = hp_tune(trainer, self.model_name, self.task_name, self.accumulation_steps, self.quick_run,
+                           self.metric, self.direction)
 
         best_model_dir = find_best_model_and_clean(best_run, self.direction, self.task_name, self.model_name)
         best_model = self._load_model(config, best_model_dir)

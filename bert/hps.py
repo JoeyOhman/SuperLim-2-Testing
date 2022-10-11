@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+from functools import partial
 from datetime import datetime
 from typing import Optional, List, Dict
 
@@ -100,23 +101,26 @@ def save_best_model(best_run: BestRun, run_name: str, model_dir: str, metric_dir
 """
 
 
-def tune_config_ray(trial):
+def tune_config_ray(accumulation_steps, trial):
     tune_config = {
         "learning_rate": tune.grid_search([1e-5, 2e-5, 3e-5, 4e-5]),
-        "per_device_train_batch_size": tune.grid_search([16, 32])
+        "per_device_train_batch_size": tune.grid_search([
+            int(16 / accumulation_steps),
+            int(32 / accumulation_steps)
+        ])
     }
     return tune_config
 
 
-def tune_config_ray_quick(trial):
+def tune_config_ray_quick(accumulation_steps, trial):
     tune_config = {
         "learning_rate": tune.grid_search([1e-5, 3e-5]),
-        "per_device_train_batch_size": tune.grid_search([16])
+        "per_device_train_batch_size": tune.grid_search([int(16 / accumulation_steps)])
     }
     return tune_config
 
 
-def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, quick_run: bool,
+def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, accumulation_steps: int, quick_run: bool,
             metric: Optional[str] = None, direction: str = "min"):
     assert direction in ["min", "max"]
     now = datetime.now()
@@ -126,6 +130,7 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, quick_run
     # experiment_metric_path = get_experiment_metrics_path(task_name, model_name_or_path)
 
     tune_config = tune_config_ray_quick if quick_run else tune_config_ray
+    tune_config = partial(tune_config, accumulation_steps)
 
     run_name = task_name + "_" + model_name_or_path.replace("/", "-")
     metrics_to_report = ["epoch", "eval_loss"]

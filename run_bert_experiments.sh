@@ -12,6 +12,7 @@ export WANDB_API_KEY=${api_key}
 export PYTHONPATH="${pwd}:$PYTHONPATH"
 
 pip install evaluate
+pip install sentencepiece
 
 mkdir -p logs
 log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S").txt"

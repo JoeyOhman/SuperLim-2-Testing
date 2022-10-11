@@ -1,28 +1,8 @@
 import json
-import os
 import shutil
 from pathlib import Path
-from transformers import AutoModelForSequenceClassification, AutoConfig, AutoTokenizer
 
 from paths import TRAINER_OUTPUT_PATH, get_experiment_models_path
-from utils import get_device
-
-
-def load_tokenizer(model_name_or_path):
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-    return tokenizer
-
-
-def load_config(model_name_or_path, num_labels):
-    config = AutoConfig.from_pretrained(model_name_or_path)
-    config.num_labels = num_labels
-    return config
-
-
-def load_model(model_name_or_path, config):
-    model = AutoModelForSequenceClassification.from_pretrained(model_name_or_path, config=config)
-    model.to(get_device())
-    return model
 
 
 def _move_best_model_and_clean(best_run, best_model_path, task_name, model_name):

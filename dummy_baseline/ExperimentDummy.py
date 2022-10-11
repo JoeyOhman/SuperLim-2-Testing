@@ -14,7 +14,7 @@ is_task_regression = {
 class ExperimentDummy(Experiment):
 
     def __init__(self, task_name: str):
-        model_name = "Dummy"
+        model_name = "Dummy (MaxFreq / Avg)"
         data_fraction = 1.0
         super().__init__(task_name, model_name, data_fraction)
 
