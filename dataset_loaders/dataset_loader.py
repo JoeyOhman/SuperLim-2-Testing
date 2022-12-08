@@ -7,7 +7,6 @@ from datasets import load_dataset, Dataset
 
 from paths import TSV_PATH
 
-# DATASET_PATH = os.path.join(JSONL_PATH, "SweParaphrase")
 # DATASET_PATH_TEMPLATE = os.path.join(JSONL_PATH, "{task}")
 DATASET_PATH_TEMPLATE = os.path.join(TSV_PATH, "{task}")
 
@@ -76,28 +75,38 @@ def reformat_dataset_DaLAJ(dataset):
     return Dataset.from_dict(new_dataset_dict)
 
 
-def load_dataset_by_task(task_name: str, data_fraction: float = 1.0):
-    # data_files = glob.glob(DATASET_PATH + "*.tsv")
-    dataset_path = DATASET_PATH_TEMPLATE.format(task=task_name)
-    data_files = {
-        "train": os.path.join(dataset_path, "train.tsv"),
-        "dev": os.path.join(dataset_path, "dev.tsv"),
-        "test": os.path.join(dataset_path, "test.tsv")
-    }
+TASK_TO_REFORMAT_FUN = {
+    "SweParaphrase": reformat_dataset_SweParaphrase,
+    "SweFAQ": reformat_dataset_SweFAQ,
+    "DaLAJ": reformat_dataset_DaLAJ,
+    "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
+}
 
-    # dataset = load_dataset('json', data_files=data_files)
-    # dataset = load_dataset('csv', data_files=data_files, delimiter="\t")
-    dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
+
+def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf=False):
+
+    if from_hf:
+        # From HuggingFace Datasets
+        # dataset = load_dataset(f"sbx/superlim-2/{task_name}")
+        dataset = load_dataset(f"sbx/superlim-2", task_name)
+    else:
+        # From local TSV
+        # data_files = glob.glob(DATASET_PATH + "*.tsv")
+        dataset_path = DATASET_PATH_TEMPLATE.format(task=task_name)
+        data_files = {
+            "train": os.path.join(dataset_path, "train.tsv"),
+            "dev": os.path.join(dataset_path, "dev.tsv"),
+            "test": os.path.join(dataset_path, "test.tsv")
+        }
+
+        # dataset = load_dataset('json', data_files=data_files)
+        # dataset = load_dataset('csv', data_files=data_files, delimiter="\t")
+        dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
+
     train_ds, dev_ds, test_ds = dataset['train'], dataset['dev'], dataset['test']
 
     # Reformat raw data to training tasks
-    task_to_reformat_fun = {
-        "SweParaphrase": reformat_dataset_SweParaphrase,
-        "SweFAQ": reformat_dataset_SweFAQ,
-        "DaLAJ": reformat_dataset_DaLAJ,
-        "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
-    }
-    format_fun = task_to_reformat_fun.get(task_name, None)
+    format_fun = TASK_TO_REFORMAT_FUN.get(task_name, None)
     if format_fun is not None:
         train_ds = format_fun(train_ds)
         dev_ds = format_fun(dev_ds)
@@ -119,4 +128,7 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0):
 
 
 if __name__ == '__main__':
-    load_dataset_by_task("SweParaphrase", 1.0)
+    dataset_main = load_dataset_by_task("SweParaphrase", 1.0, True)
+    print(dataset_main)
+    # ds = load_dataset("super_glue", "boolq")
+    # print(ds)

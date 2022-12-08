@@ -24,7 +24,7 @@ echo "Writing output to: ${log_file_path}"
 $run_cmd &> ${log_file_path}
 # $run_cmd
 
-./clear_ray_results.sh
+./clear_result_checkpoints.sh
 
 echo "Compressing metrics directory"
 tar czf metrics.tar.gz results/experiments/metrics

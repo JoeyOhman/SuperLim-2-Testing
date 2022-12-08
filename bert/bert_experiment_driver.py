@@ -17,14 +17,14 @@ def gc_and_wait():
 
 def main():
     data_fraction = 1.0
-    quick_run = False
-    hps = True
+    quick_run = True
+    hps = False
 
     # ExperimentBertDaLAJ("MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7", 2, data_fraction, hps, quick_run).run()
-    # ExperimentBertABSAbankImm("albert-base-v2", data_fraction, hps, quick_run).run()
+    ExperimentBertABSAbankImm("albert-base-v2", 1, data_fraction, hps, quick_run).run()
     # ExperimentBertSweFAQ("xlm-roberta-base", data_fraction, False, quick_run).run()
     # ExperimentBertSweFAQ("KB/bert-base-swedish-cased", data_fraction, False, quick_run).run()
-    # exit()
+    exit()
     # ExperimentBertABSAbankImm("AI-Nordics/bert-large-swedish-cased", data_fraction, hps, quick_run).run()
     # ExperimentBertSweFAQ("xlm-roberta-large", 2, data_fraction, hps, quick_run).run()
     # gc_and_wait()

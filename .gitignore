@@ -134,6 +134,7 @@ data/
 results/
 wandb/
 logs/
+garbage/
 api_wandb_key.txt
 
 metrics.tar.gz

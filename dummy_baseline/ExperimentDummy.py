@@ -3,13 +3,6 @@ from sklearn.dummy import DummyRegressor, DummyClassifier
 
 from Experiment import Experiment
 
-is_task_regression = {
-    "SweParaphrase": True,
-    "SweFAQ": False,
-    "DaLAJ": False,
-    "ABSAbank-Imm": True,
-}
-
 
 class ExperimentDummy(Experiment):
 
@@ -49,8 +42,7 @@ class ExperimentDummy(Experiment):
         dev_labels = dev_ds["labels"]
         test_labels = test_ds["labels"]
 
-        is_regression = is_task_regression[self.task_name]
-        if is_regression:
+        if self.is_regression:
             model = self._train_regression(train_labels)
         else:
             model = self._train_classification(train_labels)

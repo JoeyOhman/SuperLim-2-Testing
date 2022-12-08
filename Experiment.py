@@ -9,11 +9,11 @@ from pathlib import Path
 
 # Direction (min or max) is whether the optimization should minimize or maximize the metric
 task_to_info_dict = {
-    "SweParaphrase": {"num_classes": 1, "metric": "rmse", "direction": "min"},
+    "SweParaphrase": {"num_classes": 1, "metric": "rmse", "direction": "min", "is_regression": True},
     # "SweParaphrase": {"num_classes": 1, "metric": "spearmanr", "direction": "max"},
-    "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max"},
-    "SweFAQ": {"num_classes": 2, "metric": "accuracy", "direction": "max"},
-    "ABSAbank-Imm": {"num_classes": 1, "metric": "rmse", "direction": "min"},
+    "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
+    "SweFAQ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
+    "ABSAbank-Imm": {"num_classes": 1, "metric": "rmse", "direction": "min", "is_regression": True},
 }
 
 
@@ -27,6 +27,7 @@ class Experiment(ABC):
         self.num_classes = info_dict["num_classes"]
         self.metric = info_dict["metric"]
         self.direction = info_dict["direction"]
+        self.is_regression = info_dict["is_regression"]
 
         self.compute_metrics_fun = metric_to_compute_fun[self.metric]
 
