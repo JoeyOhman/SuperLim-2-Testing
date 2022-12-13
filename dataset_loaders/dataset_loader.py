@@ -11,23 +11,24 @@ from paths import TSV_PATH
 DATASET_PATH_TEMPLATE = os.path.join(TSV_PATH, "{task}")
 
 
-def reformat_dataset_SweParaphrase(dataset):
+def reformat_dataset_SweParaphrase(dataset, split_name):
     dataset = dataset.rename_column("Score", "labels")
     return dataset
 
 
-def reformat_dataset_ABSAbankImm(dataset):
+def reformat_dataset_ABSAbankImm(dataset, split_name):
     dataset = dataset.rename_column("label", "labels")
     return dataset
 
 
-def reformat_dataset_SweFAQ(dataset):
+def reformat_dataset_SweFAQ(dataset, split_name):
     new_dataset_dict = {
         "question": [],
         "answer": [],
         "labels": []
     }
 
+    # Group samples by categories
     categories = defaultdict(list)
     for sample in dataset:
         cat_id = sample["category_id"]
@@ -35,33 +36,44 @@ def reformat_dataset_SweFAQ(dataset):
 
     # Category probably not needed
     for category, samples in categories.items():
-        for idx, sample in enumerate(samples):
-            # Positive sample
-            q, a = sample["question"], sample["correct_answer"]
-            new_dataset_dict["question"].append(q)
-            new_dataset_dict["answer"].append(a)
-            new_dataset_dict["labels"].append(1)
+        if split_name == "train":
+            for idx, sample in enumerate(samples):
+                # Positive sample
+                q, a = sample["question"], sample["correct_answer"]
+                new_dataset_dict["question"].append(q)
+                new_dataset_dict["answer"].append(a)
+                new_dataset_dict["labels"].append(1)
 
-            # Negative samples (might need to under sample here)
-            other_indices = [i for i in range(len(samples)) if i != idx]
-            choice = random.choice(other_indices)
+                # Negative samples (might need to under sample here)
+                other_indices = [i for i in range(len(samples)) if i != idx]
+                choice = random.choice(other_indices)
 
-            incorrect_answer = samples[choice]["correct_answer"]
-            new_dataset_dict["question"].append(q)
-            new_dataset_dict["answer"].append(incorrect_answer)
-            new_dataset_dict["labels"].append(0)
-            # for other_idx, other_sample in enumerate(samples):
-            #     if idx == other_idx:
-            #         continue
-            #     incorrect_answer = other_sample["correct_answer"]
-            #     new_dataset_dict["question"].append(q)
-            #     new_dataset_dict["answer"].append(incorrect_answer)
-            #     new_dataset_dict["labels"].append(0)
+                incorrect_answer = samples[choice]["correct_answer"]
+                new_dataset_dict["question"].append(q)
+                new_dataset_dict["answer"].append(incorrect_answer)
+                new_dataset_dict["labels"].append(0)
+                # for other_idx, other_sample in enumerate(samples):
+                #     if idx == other_idx:
+                #         continue
+                #     incorrect_answer = other_sample["correct_answer"]
+                #     new_dataset_dict["question"].append(q)
+                #     new_dataset_dict["answer"].append(incorrect_answer)
+                #     new_dataset_dict["labels"].append(0)
+        else:
+            # dev/test
+            questions = [sample["question"] for sample in samples]
+            answers = [sample["correct_answer"] for sample in samples]
+
+            # For each question, add all answers in the category
+            for idx, question in enumerate(questions):
+                new_dataset_dict["question"].append(question)
+                new_dataset_dict["answer"].append(answers)
+                new_dataset_dict["labels"].append(idx)
 
     return Dataset.from_dict(new_dataset_dict)
 
 
-def reformat_dataset_DaLAJ(dataset):
+def reformat_dataset_DaLAJ(dataset, split_name):
     new_dataset_dict = {
         "text": [],
         "labels": []
@@ -87,8 +99,13 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf=Fal
 
     if from_hf:
         # From HuggingFace Datasets
+        hf_task_name = task_name.lower()
+        if hf_task_name == "absabankimm":
+            hf_task_name = "absabank"
+        elif hf_task_name == "sweparaphrase":
+            hf_task_name = "swepar"
         # dataset = load_dataset(f"sbx/superlim-2/{task_name}")
-        dataset = load_dataset(f"sbx/superlim-2", task_name)
+        dataset = load_dataset("sbx/superlim-2", hf_task_name)
     else:
         # From local TSV
         # data_files = glob.glob(DATASET_PATH + "*.tsv")
@@ -108,9 +125,9 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf=Fal
     # Reformat raw data to training tasks
     format_fun = TASK_TO_REFORMAT_FUN.get(task_name, None)
     if format_fun is not None:
-        train_ds = format_fun(train_ds)
-        dev_ds = format_fun(dev_ds)
-        test_ds = format_fun(test_ds)
+        train_ds = format_fun(train_ds, "train")
+        dev_ds = format_fun(dev_ds, "dev")
+        test_ds = format_fun(test_ds, "test")
 
     # For debugging: split dev set into dev and fake-test
     # num_test = int(len(dev_ds) / 3)

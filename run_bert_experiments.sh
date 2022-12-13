@@ -1,21 +1,63 @@
 #!/bin/bash
 
-export WANDB_ENTITY=joeyohman
-export WANDB_PROJECT=SuperLim2
-api_key=$(cat api_wandb_key.txt)
-export WANDB_API_KEY=${api_key}
-# export WANDB_MODE=offline
-# export WANDB_DISABLED=true
+DEBUG=1
+
+# Only use wandb if not debugging
+if [ "$DEBUG" == 0 ]; then
+  export WANDB_ENTITY=joeyohman
+  export WANDB_PROJECT=SuperLim2
+  api_key=$(cat api_wandb_key.txt)
+  export WANDB_API_KEY=${api_key}
+else
+  export WANDB_MODE=offline
+  export WANDB_DISABLED=true
+fi
 
 # which python
 # /bin/hostname -s
 export PYTHONPATH="${pwd}:$PYTHONPATH"
 
-pip install evaluate
-pip install sentencepiece
+# These pip installs are setup required in the docker container, skip if debug (which is used locally)
+if [ "$DEBUG" == 0 ]; then
+  pip install evaluate
+  pip install sentencepiece
+fi
 
 mkdir -p logs
-log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S").txt"
+
+# declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k")
+declare -a models=("KB/bert-base-swedish-cased")
+# declare -a tasks=("ABSAbankImm" "DaLAJ" "SweFAQ" "SweParaphrase")
+declare -a tasks=("SweFAQ")
+
+# Loop through models
+for model in "${models[@]}"
+do
+    # Inner loop through tasks
+    for task in "${tasks[@]}"
+    do
+        # Replace slash with dash in model name to avoid creating sub-directories
+        safe_model_name="${model/"/"/-}"
+        log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S")_${safe_model_name}_${task}.txt"
+        run_cmd="python3 bert/bert_experiment_driver_new.py --model_name $model --task_name $task"
+        echo "****************************************************************************************"
+        echo "Model=$model"
+        echo "Task=$task"
+        echo "Writing output to: $log_file_path"
+
+        echo $run_cmd
+
+        # Use terminal directly for debugging
+        if [ "$DEBUG" == 1 ]; then
+          $run_cmd
+        else
+          $run_cmd &> ${log_file_path}
+        fi
+
+        ./clear_result_checkpoints.sh
+    done
+done
+exit
 
 run_cmd="python3 bert/bert_experiment_driver.py"
 

@@ -1,3 +1,5 @@
+import numpy as np
+
 from abc import ABC, abstractmethod
 from typing import Dict
 
@@ -53,9 +55,30 @@ class ExperimentBert(Experiment, ABC):
             self.data_fraction = 0.05
             self.max_input_length = 64
 
+    @staticmethod
     @abstractmethod
-    def create_dataset(self, tokenizer, max_seq_len: int):
+    def preprocess_data(dataset_split, tokenizer, max_len: int, dataset_split_name: str):
         pass
+
+    def _predict(self, model, val_ds, test_ds):
+        return None
+
+    def create_dataset(self, tokenizer, max_seq_len: int):
+        train_ds, dev_ds, test_ds = self._load_data()
+
+        print("Preprocessing train_ds")
+        train_ds = self.preprocess_data(train_ds, tokenizer, max_seq_len, "train")
+        print("Preprocessing dev_ds")
+        dev_ds = self.preprocess_data(dev_ds, tokenizer, max_seq_len, "dev")
+        print("Preprocessing test_ds")
+        test_ds = self.preprocess_data(test_ds, tokenizer, max_seq_len, "test")
+
+        train_ds_lens = [sample['input_ids'].shape[0] for sample in train_ds]
+        print("Train ds, Max len:", max(train_ds_lens))
+        print("Train ds, Mean len:", np.mean(train_ds_lens))
+        print(f"#samples:\ntrain={train_ds.num_rows}, dev={dev_ds.num_rows}, test={test_ds.num_rows}")
+
+        return train_ds, dev_ds, test_ds
 
     def _load_tokenizer(self):
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -97,14 +120,22 @@ class ExperimentBert(Experiment, ABC):
         trainer.train()
         return trainer
 
-    def _evaluate(self, trainer, test_ds):
-        metrics_eval = trainer.evaluate()
-        trainer.log_metrics("eval", metrics_eval)
+    def _evaluate(self, trainer, val_ds, test_ds):
+        # Try overridden predict
+        custom_predict_result = self._predict(trainer.model, val_ds, test_ds)
+        if custom_predict_result is not None:
+            metrics_eval, metrics_test = custom_predict_result
 
-        predictions, labels, metrics_test = trainer.predict(test_ds)
-        # predictions = np.argmax(predictions, axis=1)
-        trainer.log_metrics("test", metrics_test)
+        else:
+            # Trainer native evaluation
+            metrics_eval = trainer.evaluate()
+            trainer.log_metrics("eval", metrics_eval)
 
+            predictions, labels, metrics_test = trainer.predict(test_ds)
+            # predictions = np.argmax(predictions, axis=1)
+            trainer.log_metrics("test", metrics_test)
+
+        # Pack results
         metric_dict = {
             "eval": metrics_eval["eval_" + self.metric],
             "test": metrics_test["test_" + self.metric],
@@ -130,7 +161,7 @@ class ExperimentBert(Experiment, ABC):
         else:
             trainer = self._run_no_hps(config, tokenizer, train_ds, val_ds)
 
-        metric_dict = self._evaluate(trainer, test_ds)
+        metric_dict = self._evaluate(trainer, val_ds, test_ds)
 
         # experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=self.model_name, task=self.task_name)
         # with open(experiment_metric_path + "/metrics.json", 'w') as f:
