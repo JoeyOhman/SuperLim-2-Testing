@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 
 from abc import ABC, abstractmethod
@@ -17,7 +18,7 @@ from utils import get_device
 class ExperimentBert(Experiment, ABC):
 
     def __init__(self, task_name: str, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool,
-                 quick_run: bool):
+                 quick_run: bool, custom_predict_step_fun=None):
         assert accumulation_steps == 1 or accumulation_steps % 2 == 0, "accumulation_steps must be 1, or multiple of 2"
         super().__init__(task_name, model_name, data_fraction)
 
@@ -37,7 +38,7 @@ class ExperimentBert(Experiment, ABC):
             save_strategy="epoch",
             overwrite_output_dir=True,
             skip_memory_metrics=True,
-            fp16=True,
+            fp16=torch.cuda.is_available(),
             disable_tqdm=True,
             load_best_model_at_end=True,
             metric_for_best_model="eval_" + self.metric,
@@ -47,6 +48,7 @@ class ExperimentBert(Experiment, ABC):
         )
         self.accumulation_steps = accumulation_steps
         self.training_args = training_arguments
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         # self.max_input_length = max_input_length
         self.hps = hps
         self.quick_run = quick_run
@@ -60,8 +62,8 @@ class ExperimentBert(Experiment, ABC):
     def preprocess_data(dataset_split, tokenizer, max_len: int, dataset_split_name: str):
         pass
 
-    def _predict(self, model, val_ds, test_ds):
-        return None
+    # def _predict(self, model, val_ds, test_ds):
+    #     return None
 
     def create_dataset(self, tokenizer, max_seq_len: int):
         train_ds, dev_ds, test_ds = self._load_data()
@@ -122,18 +124,18 @@ class ExperimentBert(Experiment, ABC):
 
     def _evaluate(self, trainer, val_ds, test_ds):
         # Try overridden predict
-        custom_predict_result = self._predict(trainer.model, val_ds, test_ds)
-        if custom_predict_result is not None:
-            metrics_eval, metrics_test = custom_predict_result
+        # custom_predict_result = self._predict(trainer.model, val_ds, test_ds)
+        # if custom_predict_result is not None:
+        #     metrics_eval, metrics_test = custom_predict_result
+        #
+        # else:
+        # Trainer native evaluation
+        metrics_eval = trainer.evaluate()
+        trainer.log_metrics("eval", metrics_eval)
 
-        else:
-            # Trainer native evaluation
-            metrics_eval = trainer.evaluate()
-            trainer.log_metrics("eval", metrics_eval)
-
-            predictions, labels, metrics_test = trainer.predict(test_ds)
-            # predictions = np.argmax(predictions, axis=1)
-            trainer.log_metrics("test", metrics_test)
+        predictions, labels, metrics_test = trainer.predict(test_ds)
+        # predictions = np.argmax(predictions, axis=1)
+        trainer.log_metrics("test", metrics_test)
 
         # Pack results
         metric_dict = {
@@ -150,11 +152,11 @@ class ExperimentBert(Experiment, ABC):
         # model_name_or_path = model_args.model_name_or_path
         tokenizer = self._load_tokenizer()
         config = self._load_config()
-        max_seq_len = config.max_position_embeddings
+        self.max_seq_len = config.max_position_embeddings
         if self.quick_run:
-            max_seq_len = min(max_seq_len, self.max_input_length)
+            self.max_seq_len = min(self.max_seq_len, self.max_input_length)
 
-        train_ds, val_ds, test_ds = self.create_dataset(tokenizer, max_seq_len)
+        train_ds, val_ds, test_ds = self.create_dataset(tokenizer, self.max_seq_len)
 
         if self.hps:
             trainer = self._run_hps(config, tokenizer, train_ds, val_ds)

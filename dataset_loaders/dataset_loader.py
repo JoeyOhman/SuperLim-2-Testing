@@ -36,39 +36,39 @@ def reformat_dataset_SweFAQ(dataset, split_name):
 
     # Category probably not needed
     for category, samples in categories.items():
-        if split_name == "train":
-            for idx, sample in enumerate(samples):
-                # Positive sample
-                q, a = sample["question"], sample["correct_answer"]
-                new_dataset_dict["question"].append(q)
-                new_dataset_dict["answer"].append(a)
-                new_dataset_dict["labels"].append(1)
+        # if split_name == "train":
+        for idx, sample in enumerate(samples):
+            # Positive sample
+            q, a = sample["question"], sample["correct_answer"]
+            new_dataset_dict["question"].append(q)
+            new_dataset_dict["answer"].append(a)
+            new_dataset_dict["labels"].append(1)
 
-                # Negative samples (might need to under sample here)
-                other_indices = [i for i in range(len(samples)) if i != idx]
-                choice = random.choice(other_indices)
+            # Negative samples (might need to under sample here)
+            other_indices = [i for i in range(len(samples)) if i != idx]
+            choice = random.choice(other_indices)
 
-                incorrect_answer = samples[choice]["correct_answer"]
-                new_dataset_dict["question"].append(q)
-                new_dataset_dict["answer"].append(incorrect_answer)
-                new_dataset_dict["labels"].append(0)
-                # for other_idx, other_sample in enumerate(samples):
-                #     if idx == other_idx:
-                #         continue
-                #     incorrect_answer = other_sample["correct_answer"]
-                #     new_dataset_dict["question"].append(q)
-                #     new_dataset_dict["answer"].append(incorrect_answer)
-                #     new_dataset_dict["labels"].append(0)
-        else:
-            # dev/test
-            questions = [sample["question"] for sample in samples]
-            answers = [sample["correct_answer"] for sample in samples]
-
-            # For each question, add all answers in the category
-            for idx, question in enumerate(questions):
-                new_dataset_dict["question"].append(question)
-                new_dataset_dict["answer"].append(answers)
-                new_dataset_dict["labels"].append(idx)
+            incorrect_answer = samples[choice]["correct_answer"]
+            new_dataset_dict["question"].append(q)
+            new_dataset_dict["answer"].append(incorrect_answer)
+            new_dataset_dict["labels"].append(0)
+            # for other_idx, other_sample in enumerate(samples):
+            #     if idx == other_idx:
+            #         continue
+            #     incorrect_answer = other_sample["correct_answer"]
+            #     new_dataset_dict["question"].append(q)
+            #     new_dataset_dict["answer"].append(incorrect_answer)
+            #     new_dataset_dict["labels"].append(0)
+        # else:
+        #     # dev/test
+        #     questions = [sample["question"] for sample in samples]
+        #     answers = [sample["correct_answer"] for sample in samples]
+        #
+        #     # For each question, add all answers in the category
+        #     for idx, question in enumerate(questions):
+        #         new_dataset_dict["question"].append(question)
+        #         new_dataset_dict["answer"].append(answers)
+        #         new_dataset_dict["labels"].append(idx)
 
     return Dataset.from_dict(new_dataset_dict)
 
@@ -95,7 +95,7 @@ TASK_TO_REFORMAT_FUN = {
 }
 
 
-def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf=False):
+def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bool = False, reformat: bool = True):
 
     if from_hf:
         # From HuggingFace Datasets
@@ -123,11 +123,12 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf=Fal
     train_ds, dev_ds, test_ds = dataset['train'], dataset['dev'], dataset['test']
 
     # Reformat raw data to training tasks
-    format_fun = TASK_TO_REFORMAT_FUN.get(task_name, None)
-    if format_fun is not None:
-        train_ds = format_fun(train_ds, "train")
-        dev_ds = format_fun(dev_ds, "dev")
-        test_ds = format_fun(test_ds, "test")
+    if reformat:
+        format_fun = TASK_TO_REFORMAT_FUN.get(task_name, None)
+        if format_fun is not None:
+            train_ds = format_fun(train_ds, "train")
+            dev_ds = format_fun(dev_ds, "dev")
+            test_ds = format_fun(test_ds, "test")
 
     # For debugging: split dev set into dev and fake-test
     # num_test = int(len(dev_ds) / 3)

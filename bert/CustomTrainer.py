@@ -13,8 +13,7 @@ class CustomTrainer(Trainer):
         super().log(logs)
 
     @staticmethod
-    def init_trainer(training_args, model, tokenizer, train_ds, val_ds, compute_metrics_fn, model_init=None,
-                     custom_prediction_step_fun=None):
+    def init_trainer(training_args, model, tokenizer, train_ds, val_ds, compute_metrics_fn, model_init=None):
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer,
                                                 pad_to_multiple_of=8 if training_args.fp16 else None)
 

@@ -27,6 +27,7 @@ mkdir -p logs
 
 # declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k")
 declare -a models=("KB/bert-base-swedish-cased")
+# declare -a models=("albert-base-v2")
 # declare -a tasks=("ABSAbankImm" "DaLAJ" "SweFAQ" "SweParaphrase")
 declare -a tasks=("SweFAQ")
 
