@@ -19,7 +19,6 @@ class ExperimentBertSweFAQ(ExperimentBert):
 
     @staticmethod
     def preprocess_data(dataset_split, tokenizer, max_len, dataset_split_name):
-        # if dataset_split_name == "train":
         dataset_split = dataset_split.map(
             lambda sample: tokenizer(sample['question'], sample['answer'], truncation=True, max_length=max_len),
             batched=True, num_proc=4)
@@ -30,30 +29,8 @@ class ExperimentBertSweFAQ(ExperimentBert):
             columns.append('token_type_ids')
         dataset_split.set_format(type='torch', columns=columns)
         dataset_split = dataset_split.remove_columns(['question', 'answer'])
-        # else:
-            # sample: (question, answers_list, label_idx)
-
-            # dataset_split = dataset_split.map(lambda sample: {"input_ids_question": tokenizer()})
-            # dataset_split = dataset_split.map(
-            #     lambda sample: tokenizer(sample['question'], truncation=True, max_length=max_len),
-            #     batched=True, num_proc=4)
-            # pass
 
         return dataset_split
-
-    # def _predict(self, model, val_ds, test_ds):
-    #
-    #     model.eval()
-    #
-    #     for sample in val_ds:
-    #         question, answers, label = sample["question"], sample["answer"], sample["labels"]
-    #         print(question)
-    #         print(answers)
-    #         print(label)
-    #         exit()
-    #     # for ds in val_ds, test_ds:
-    #
-    #     return None
 
     @staticmethod
     def _reformat_eval_sets(ds_split):
@@ -103,12 +80,13 @@ class ExperimentBertSweFAQ(ExperimentBert):
         acc = _compute_metrics_accuracy((predictions, labels))
         return acc
 
+    # Override entire _evaluate in order to do cross encoder
     def _evaluate(self, trainer, val_ds, test_ds):
         tokenizer = self._load_tokenizer()
         model = trainer.model
         model.to(self.device)
         model.eval()
-        # TODO: set data frac to 1.0
+
         _, val_ds_raw, test_ds_raw = load_dataset_by_task(self.task_name, 1.0, reformat=False)
         val_ds = self._reformat_eval_sets(val_ds_raw)
         test_ds = self._reformat_eval_sets(test_ds_raw)
@@ -126,9 +104,3 @@ class ExperimentBertSweFAQ(ExperimentBert):
         }
 
         return metric_dict
-
-        # return super()._evaluate(trainer, val_ds, test_ds)
-
-    # def run_impl(self) -> Dict[str, float]:
-    #     metric_dict = super().run_impl()
-    #

@@ -1,4 +1,5 @@
 from dummy_baseline.ExperimentDummy import ExperimentDummy
+from utils import set_seed
 
 
 def main():
@@ -8,4 +9,5 @@ def main():
 
 
 if __name__ == '__main__':
+    set_seed()
     main()

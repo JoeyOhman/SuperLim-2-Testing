@@ -18,7 +18,7 @@ from utils import get_device
 class ExperimentBert(Experiment, ABC):
 
     def __init__(self, task_name: str, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool,
-                 quick_run: bool, custom_predict_step_fun=None):
+                 quick_run: bool):
         assert accumulation_steps == 1 or accumulation_steps % 2 == 0, "accumulation_steps must be 1, or multiple of 2"
         super().__init__(task_name, model_name, data_fraction)
 
