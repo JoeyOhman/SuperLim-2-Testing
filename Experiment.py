@@ -47,8 +47,10 @@ class Experiment(ABC):
         # experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=self.model_name, task=self.task_name)
         experiment_metric_path = get_experiment_metrics_path(self.task_name,  self.model_name)
         Path(experiment_metric_path).mkdir(parents=True, exist_ok=True)
+        metric_str = json.dumps(metric_dict, ensure_ascii=False, indent="\t")
+        print(metric_str)
         with open(experiment_metric_path + "/metrics.json", 'w') as f:
-            f.write(json.dumps(metric_dict, ensure_ascii=False, indent="\t"))
+            f.write(metric_str)
 
     def _load_data(self):
         return load_dataset_by_task(self.task_name, self.data_fraction)

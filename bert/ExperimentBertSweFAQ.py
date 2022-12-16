@@ -87,7 +87,7 @@ class ExperimentBertSweFAQ(ExperimentBert):
         model.to(self.device)
         model.eval()
 
-        _, val_ds_raw, test_ds_raw = load_dataset_by_task(self.task_name, 1.0, reformat=False)
+        _, val_ds_raw, test_ds_raw = load_dataset_by_task(self.task_name, self.data_fraction, reformat=False)
         val_ds = self._reformat_eval_sets(val_ds_raw)
         test_ds = self._reformat_eval_sets(test_ds_raw)
 

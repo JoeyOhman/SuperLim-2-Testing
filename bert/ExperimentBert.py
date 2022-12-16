@@ -1,4 +1,5 @@
 import torch
+import transformers
 import numpy as np
 
 from abc import ABC, abstractmethod
@@ -87,6 +88,7 @@ class ExperimentBert(Experiment, ABC):
         return train_ds, dev_ds, test_ds
 
     def _load_tokenizer(self):
+        transformers.logging.set_verbosity_error()
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if "gpt" in self.model_name:
             tokenizer.padding_side = "left"
