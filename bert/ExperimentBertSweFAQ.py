@@ -82,7 +82,7 @@ class ExperimentBertSweFAQ(ExperimentBert):
 
     # Override entire _evaluate in order to do cross encoder
     def _evaluate(self, trainer, val_ds, test_ds):
-        tokenizer = self._load_tokenizer()
+        # tokenizer = self._load_tokenizer()
         model = trainer.model
         model.to(self.device)
         model.eval()
@@ -91,8 +91,8 @@ class ExperimentBertSweFAQ(ExperimentBert):
         val_ds = self._reformat_eval_sets(val_ds_raw)
         test_ds = self._reformat_eval_sets(test_ds_raw)
 
-        val_metric = self._predict_dataset_cross(tokenizer, model, val_ds)
-        test_metric = self._predict_dataset_cross(tokenizer, model, test_ds)
+        val_metric = self._predict_dataset_cross(self.tokenizer, model, val_ds)
+        test_metric = self._predict_dataset_cross(self.tokenizer, model, test_ds)
 
         # Pack results
         assert self.metric == "accuracy"

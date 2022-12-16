@@ -52,10 +52,14 @@ class ExperimentBert(Experiment, ABC):
         # self.max_input_length = max_input_length
         self.hps = hps
         self.quick_run = quick_run
+        self.config = self._load_config()
+        self.max_seq_len = self.config.max_position_embeddings
+        self.tokenizer = self._load_tokenizer()
+
         if quick_run:
+            self.max_seq_len = min(self.max_seq_len, 64)
             self.training_args.num_train_epochs = 2
             self.data_fraction = 0.05
-            self.max_input_length = 64
 
     @staticmethod
     @abstractmethod
@@ -103,15 +107,17 @@ class ExperimentBert(Experiment, ABC):
                                                                    ignore_mismatched_sizes=True)
         # TODO:
         # resize model embedding to match new tokenizer
-        # model.resize_token_embeddings(len(tokenizer))
+        model.resize_token_embeddings(len(self.tokenizer))
         model.to(get_device())
         return model
 
     def _run_hps(self, config, tokenizer, train_ds, val_ds):
         def _model_init(trial=None):
             # TODO: resize model embedding to match new tokenizer
-            return AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
-                                                                      ignore_mismatched_sizes=True)
+            model = AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
+                                                                       ignore_mismatched_sizes=True)
+            model.resize_token_embeddings(len(self.tokenizer))
+            return model
 
         trainer = CustomTrainer.init_trainer(self.training_args, None, tokenizer, train_ds, val_ds,
                                              self._compute_metrics, _model_init)
@@ -160,18 +166,13 @@ class ExperimentBert(Experiment, ABC):
     def run_impl(self) -> Dict[str, float]:
         # model_args, data_args, training_args = get_hf_args()
         # model_name_or_path = model_args.model_name_or_path
-        tokenizer = self._load_tokenizer()
-        config = self._load_config()
-        self.max_seq_len = config.max_position_embeddings
-        if self.quick_run:
-            self.max_seq_len = min(self.max_seq_len, self.max_input_length)
 
-        train_ds, val_ds, test_ds = self.create_dataset(tokenizer, self.max_seq_len)
+        train_ds, val_ds, test_ds = self.create_dataset(self.tokenizer, self.max_seq_len)
 
         if self.hps:
-            trainer = self._run_hps(config, tokenizer, train_ds, val_ds)
+            trainer = self._run_hps(self.config, self.tokenizer, train_ds, val_ds)
         else:
-            trainer = self._run_no_hps(config, tokenizer, train_ds, val_ds)
+            trainer = self._run_no_hps(self.config, self.tokenizer, train_ds, val_ds)
 
         metric_dict = self._evaluate(trainer, val_ds, test_ds)
 
