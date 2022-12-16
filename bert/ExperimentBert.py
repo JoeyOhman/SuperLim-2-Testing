@@ -84,22 +84,32 @@ class ExperimentBert(Experiment, ABC):
 
     def _load_tokenizer(self):
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        if "gpt" in self.model_name:
+            tokenizer.padding_side = "left"
+        if "gpt2" in self.model_name or tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
         return tokenizer
 
     def _load_config(self):
         config = AutoConfig.from_pretrained(self.model_name)
         config.num_labels = self.num_classes
+        if "gpt2" in self.model_name:
+            config.pad_token_id = config.eos_token_id
         return config
 
     def _load_model(self, config, model_path=None):
         model_name = self.model_name if model_path is None else model_path
         model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config,
                                                                    ignore_mismatched_sizes=True)
+        # TODO:
+        # resize model embedding to match new tokenizer
+        # model.resize_token_embeddings(len(tokenizer))
         model.to(get_device())
         return model
 
     def _run_hps(self, config, tokenizer, train_ds, val_ds):
         def _model_init(trial=None):
+            # TODO: resize model embedding to match new tokenizer
             return AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
                                                                       ignore_mismatched_sizes=True)
 

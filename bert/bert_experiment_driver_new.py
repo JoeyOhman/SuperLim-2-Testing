@@ -18,7 +18,7 @@ task_to_bert_class = {
 
 def main(args):
     data_fraction = 1.0
-    quick_run = False
+    quick_run = True
     hps = False
     accumulation_steps = 1
 
