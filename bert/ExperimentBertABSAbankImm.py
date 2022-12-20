@@ -8,11 +8,11 @@ class ExperimentBertABSAbankImm(ExperimentBert):
         # max_input_length = 256
         super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run)
 
-    @staticmethod
-    def preprocess_data(dataset_split, tokenizer, max_len, dataset_split_name):
+    def preprocess_data(self, dataset_split):
         dataset_split = dataset_split.map(
-            lambda sample: tokenizer(sample['text'], truncation=True, max_length=max_len),
-            batched=True, num_proc=4)
+            lambda sample: self.batch_tokenize(sample['text']), batched=True, num_proc=4)
+            # lambda sample: tokenizer(sample['text'], truncation=True, max_length=max_len),
+            # batched=True, num_proc=4)
 
         features = list(dataset_split.features.keys())
         columns = ['input_ids', 'attention_mask', 'labels']

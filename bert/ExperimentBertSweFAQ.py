@@ -2,12 +2,13 @@ from collections import defaultdict
 from typing import Dict
 
 import torch
+import transformers
 import numpy as np
 from datasets import Dataset
 
 from bert.ExperimentBert import ExperimentBert
 from compute_metrics import _compute_metrics_accuracy
-from dataset_loaders.dataset_loader import load_dataset_by_task
+from dataset_loaders.dataset_loader import load_dataset_by_task, reformat_eval_set_swefaq
 
 
 class ExperimentBertSweFAQ(ExperimentBert):
@@ -17,11 +18,9 @@ class ExperimentBertSweFAQ(ExperimentBert):
         # max_input_length = 256
         super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run)
 
-    @staticmethod
-    def preprocess_data(dataset_split, tokenizer, max_len, dataset_split_name):
+    def preprocess_data(self, dataset_split):
         dataset_split = dataset_split.map(
-            lambda sample: tokenizer(sample['question'], sample['answer'], truncation=True, max_length=max_len),
-            batched=True, num_proc=4)
+            lambda sample: self.batch_tokenize(sample["question"], sample["answer"]), batched=True, num_proc=4)
 
         features = list(dataset_split.features.keys())
         columns = ['input_ids', 'attention_mask', 'labels']
@@ -30,38 +29,21 @@ class ExperimentBertSweFAQ(ExperimentBert):
         dataset_split.set_format(type='torch', columns=columns)
         dataset_split = dataset_split.remove_columns(['question', 'answer'])
 
+        # for sample in dataset_split:
+        #     ids = sample["input_ids"].detach().cpu().numpy()
+        #     mask = sample["attention_mask"].detach().cpu().numpy()
+        #     print(ids)
+        #     print(mask)
+        #     print(self.tokenizer.decode(ids, skip_special_tokens=False))
+        #     exit()
+
         return dataset_split
 
-    @staticmethod
-    def _reformat_eval_sets(ds_split):
-        new_dataset_dict = {
-            "question": [],
-            "answer": [],
-            "labels": []
-        }
-
-        # Group samples by categories
-        categories = defaultdict(list)
-        for sample in ds_split:
-            cat_id = sample["category_id"]
-            categories[cat_id].append(sample)
-
-        for category, samples in categories.items():
-            questions = [sample["question"] for sample in samples]
-            answers = [sample["correct_answer"] for sample in samples]
-
-            # For each question, add all answers in the category
-            for idx, question in enumerate(questions):
-                new_dataset_dict["question"].append(question)
-                new_dataset_dict["answer"].append(answers)
-                new_dataset_dict["labels"].append(idx)
-
-        return Dataset.from_dict(new_dataset_dict)
-
-    def _predict_sample_cross(self, tokenizer, model, question, answers):
+    def _predict_sample_cross(self, model, question, answers):
         probs = []
         for answer in answers:
-            encoded = tokenizer(question, answer, return_tensors="pt", truncation=True, max_length=self.max_seq_len)
+            # encoded = tokenizer(question, answer, return_tensors="pt", truncation=True, max_length=self.max_seq_len)
+            encoded = self.batch_tokenize([question], [answer], ret_tensors="pt")
             encoded = encoded.to(self.device)
             logits = model(**encoded).logits[0].cpu().detach().numpy()
             probs.append(logits[1])
@@ -73,7 +55,7 @@ class ExperimentBertSweFAQ(ExperimentBert):
         predictions, labels = [], []
         for sample in dataset:
             question, answers, label = sample["question"], sample["answer"], sample["labels"]
-            prediction = self._predict_sample_cross(tokenizer, model, question, answers)
+            prediction = self._predict_sample_cross(model, question, answers)
             predictions.append(prediction)
             labels.append(label)
 
@@ -83,13 +65,14 @@ class ExperimentBertSweFAQ(ExperimentBert):
     # Override entire _evaluate in order to do cross encoder
     def _evaluate(self, trainer, val_ds, test_ds):
         # tokenizer = self._load_tokenizer()
+        transformers.logging.set_verbosity_error()
         model = trainer.model
         model.to(self.device)
         model.eval()
 
         _, val_ds_raw, test_ds_raw = load_dataset_by_task(self.task_name, self.data_fraction, reformat=False)
-        val_ds = self._reformat_eval_sets(val_ds_raw)
-        test_ds = self._reformat_eval_sets(test_ds_raw)
+        val_ds = reformat_eval_set_swefaq(val_ds_raw)
+        test_ds = reformat_eval_set_swefaq(test_ds_raw)
 
         val_metric = self._predict_dataset_cross(self.tokenizer, model, val_ds)
         test_metric = self._predict_dataset_cross(self.tokenizer, model, test_ds)

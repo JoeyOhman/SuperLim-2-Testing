@@ -25,16 +25,15 @@ class ExperimentBert(Experiment, ABC):
 
         # Arguments that are not covered by HPO
         training_arguments = TrainingArguments(
-            learning_rate=1e-4,
+            # learning_rate=1e-4,
             output_dir=TRAINER_OUTPUT_PATH,
             per_device_train_batch_size=int(32 / accumulation_steps),
             per_device_eval_batch_size=int(64 / accumulation_steps),
             gradient_accumulation_steps=accumulation_steps,
             eval_accumulation_steps=accumulation_steps,
             num_train_epochs=10,
-            # num_train_epochs=10,
-            weight_decay=0.1,
-            warmup_ratio=0.06,
+            # weight_decay=0.1,
+            # warmup_ratio=0.06,
             evaluation_strategy="epoch",
             save_strategy="epoch",
             overwrite_output_dir=True,
@@ -57,28 +56,32 @@ class ExperimentBert(Experiment, ABC):
         self.max_seq_len = self.config.max_position_embeddings
         self.tokenizer = self._load_tokenizer()
 
+        # Avoid technical issues by not going beyond 1024
+        # self.max_seq_len = min(self.max_seq_len, 1024)
+        # self.max_seq_len = min(self.max_seq_len, 512)
+        self.max_seq_len = min(self.max_seq_len, 256)
+        # self.max_seq_len = min(self.max_seq_len, 64)
         if quick_run:
             self.max_seq_len = min(self.max_seq_len, 64)
             self.training_args.num_train_epochs = 2
             self.data_fraction = 0.05
 
-    @staticmethod
     @abstractmethod
-    def preprocess_data(dataset_split, tokenizer, max_len: int, dataset_split_name: str):
+    def preprocess_data(self, dataset_split):
         pass
 
     # def _predict(self, model, val_ds, test_ds):
     #     return None
 
-    def create_dataset(self, tokenizer, max_seq_len: int):
+    def create_dataset(self):
         train_ds, dev_ds, test_ds = self._load_data()
 
         print("Preprocessing train_ds")
-        train_ds = self.preprocess_data(train_ds, tokenizer, max_seq_len, "train")
+        train_ds = self.preprocess_data(train_ds)
         print("Preprocessing dev_ds")
-        dev_ds = self.preprocess_data(dev_ds, tokenizer, max_seq_len, "dev")
+        dev_ds = self.preprocess_data(dev_ds)
         print("Preprocessing test_ds")
-        test_ds = self.preprocess_data(test_ds, tokenizer, max_seq_len, "test")
+        test_ds = self.preprocess_data(test_ds)
 
         train_ds_lens = [sample['input_ids'].shape[0] for sample in train_ds]
         print("Train ds, Max len:", max(train_ds_lens))
@@ -87,11 +90,40 @@ class ExperimentBert(Experiment, ABC):
 
         return train_ds, dev_ds, test_ds
 
+    def batch_tokenize(self, texts1, texts2=None, ret_tensors=None):
+        # print(texts1)
+        assert not isinstance(texts1, str)
+        # Not a sentence pair
+        if texts2 is None:
+            # Manually append eos token
+            if "gpt" in self.model_name:
+                return self.tokenizer([t + " " + self.tokenizer.eos_token for t in texts1],
+                                      truncation=True, max_length=self.max_seq_len, padding=True,
+                                      return_tensors=ret_tensors)
+            else:
+                return self.tokenizer(texts1, truncation=True, max_length=self.max_seq_len, return_tensors=ret_tensors)
+
+        if "gpt" in self.model_name:
+            # gpt model, manually encode EOS
+            return self.tokenizer(
+                # [t1 + " " + self.tokenizer.eos_token + " " for t1 in texts1],
+                # [t2 + " " + self.tokenizer.eos_token for t2 in texts2],
+                [t1 + " " + "$" + " " for t1 in texts1],
+                # [t2 + " " + "[CLS]" for t2 in texts2],
+                [t2 for t2 in texts2],
+                truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
+        else:
+            # regular bert-style sentence pair tokenization
+            return self.tokenizer(texts1, texts2, truncation=True, max_length=self.max_seq_len,
+                                  return_tensors=ret_tensors)
+
     def _load_tokenizer(self):
         transformers.logging.set_verbosity_error()
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if "gpt" in self.model_name:
             tokenizer.padding_side = "left"
+            # tokenizer.add_tokens(['$', '[CLS]'], special_tokens=True)
+            tokenizer.add_tokens(['$'], special_tokens=True)
         if "gpt2" in self.model_name or tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         return tokenizer
@@ -107,15 +139,13 @@ class ExperimentBert(Experiment, ABC):
         model_name = self.model_name if model_path is None else model_path
         model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config,
                                                                    ignore_mismatched_sizes=True)
-        # TODO:
-        # resize model embedding to match new tokenizer
+
         model.resize_token_embeddings(len(self.tokenizer))
         model.to(get_device())
         return model
 
     def _run_hps(self, config, tokenizer, train_ds, val_ds):
         def _model_init(trial=None):
-            # TODO: resize model embedding to match new tokenizer
             model = AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
                                                                        ignore_mismatched_sizes=True)
             model.resize_token_embeddings(len(self.tokenizer))
@@ -169,7 +199,7 @@ class ExperimentBert(Experiment, ABC):
         # model_args, data_args, training_args = get_hf_args()
         # model_name_or_path = model_args.model_name_or_path
 
-        train_ds, val_ds, test_ds = self.create_dataset(self.tokenizer, self.max_seq_len)
+        train_ds, val_ds, test_ds = self.create_dataset()
 
         if self.hps:
             trainer = self._run_hps(self.config, self.tokenizer, train_ds, val_ds)

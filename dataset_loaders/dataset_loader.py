@@ -87,30 +87,30 @@ def reformat_dataset_DaLAJ(dataset, split_name):
     return Dataset.from_dict(new_dataset_dict)
 
 
-# def _reformat_eval_sets_swefaq(ds_split):
-#     new_dataset_dict = {
-#         "question": [],
-#         "answer": [],
-#         "labels": []
-#     }
-#
-#     # Group samples by categories
-#     categories = defaultdict(list)
-#     for sample in ds_split:
-#         cat_id = sample["category_id"]
-#         categories[cat_id].append(sample)
-#
-#     for category, samples in categories.items():
-#         questions = [sample["question"] for sample in samples]
-#         answers = [sample["correct_answer"] for sample in samples]
-#
-#         # For each question, add all answers in the category
-#         for idx, question in enumerate(questions):
-#             new_dataset_dict["question"].append(question)
-#             new_dataset_dict["answer"].append(answers)
-#             new_dataset_dict["labels"].append(idx)
-#
-#     return Dataset.from_dict(new_dataset_dict)
+def reformat_eval_set_swefaq(ds_split):
+    new_dataset_dict = {
+        "question": [],
+        "answer": [],
+        "labels": []
+    }
+
+    # Group samples by categories
+    categories = defaultdict(list)
+    for sample in ds_split:
+        cat_id = sample["category_id"]
+        categories[cat_id].append(sample)
+
+    for category, samples in categories.items():
+        questions = [sample["question"] for sample in samples]
+        answers = [sample["correct_answer"] for sample in samples]
+
+        # For each question, add all answers in the category
+        for idx, question in enumerate(questions):
+            new_dataset_dict["question"].append(question)
+            new_dataset_dict["answer"].append(answers)
+            new_dataset_dict["labels"].append(idx)
+
+    return Dataset.from_dict(new_dataset_dict)
 
 
 TASK_TO_REFORMAT_FUN = {
