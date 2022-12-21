@@ -2,7 +2,8 @@ from typing import Dict
 
 from sklearn.pipeline import make_pipeline
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.svm import LinearSVC, LinearSVR
 
 from Experiment import Experiment
 
@@ -14,16 +15,19 @@ class ExperimentDecisionTree(Experiment):
     def __init__(self, task_name: str):
         model_name = "Decision Tree"
         data_fraction = 1.0
-        self.vectorizer = CountVectorizer(ngram_range=(1, 2), lowercase=False, binary=False)
+        # self.vectorizer = CountVectorizer(ngram_range=(1, 2), lowercase=False, binary=False)
+        self.vectorizer = TfidfVectorizer(ngram_range=(1, 10), lowercase=False, binary=False)
         super().__init__(task_name, model_name, data_fraction)
 
     def _train_regression(self, texts_train, labels_train, texts_dev, labels_dev, texts_test, labels_test):
-        model = make_pipeline(self.vectorizer, DecisionTreeRegressor())
+        # model = make_pipeline(self.vectorizer, DecisionTreeRegressor())
+        model = make_pipeline(self.vectorizer, LinearSVR())
         model.fit(texts_train, labels_train)
         return model
 
     def _train_classification(self, texts_train, labels_train, texts_dev, labels_dev, texts_test, labels_test):
-        model = make_pipeline(self.vectorizer, DecisionTreeClassifier())
+        model = make_pipeline(self.vectorizer, LinearSVC())
+        # model = make_pipeline(self.vectorizer, DecisionTreeClassifier())
         model.fit(texts_train, labels_train)
         return model
 
@@ -65,14 +69,20 @@ class ExperimentDecisionTree(Experiment):
         elif self.task_name == "SweFAQ":
             pass
         elif self.task_name == "SweParaphrase":
-            pass
+            # sample['Sentence 1'], sample['Sentence 2']
+            sep = ""
+            # sep = " "
+            # sep = " [SEP] "
+            return [s1 + sep + s2 for s1, s2 in zip(dataset_split["Sentence 1"], dataset_split["Sentence 2"])], dataset_split["labels"]
         else:
             print(f"Task={self.task_name} reformatting function for raw text not implemented")
             exit()
 
 
 if __name__ == '__main__':
-    print("DaLAJ:")
-    ExperimentDecisionTree("DaLAJ").run()
-    print("ABSAbank-Imm:")
-    ExperimentDecisionTree("ABSAbank-Imm").run()
+    # print("DaLAJ:")
+    # ExperimentDecisionTree("DaLAJ").run()
+    # print("ABSAbank-Imm:")
+    # ExperimentDecisionTree("ABSAbank-Imm").run()
+    print("SweParaphrase:")
+    ExperimentDecisionTree("SweParaphrase").run()
