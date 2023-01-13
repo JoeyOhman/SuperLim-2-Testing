@@ -1,10 +1,10 @@
 from bert.ExperimentBert import ExperimentBert
 
 
-class ExperimentBertDaLAJ(ExperimentBert):
+class ExperimentBertReviews(ExperimentBert):
 
     def __init__(self, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool, quick_run: bool):
-        task_name = "DaLAJ"
+        task_name = "Reviews"
         # max_input_length = 128
         super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run)
 
@@ -23,9 +23,9 @@ class ExperimentBertDaLAJ(ExperimentBert):
         dataset_split.set_format(type='torch', columns=columns)
         dataset_split = dataset_split.remove_columns(['text'])
 
-        # for sample in dataset_split:
-        #     print(sample)
-        #     break
+        for sample in dataset_split:
+            print(sample)
+            break
         #     exit()
 
         return dataset_split

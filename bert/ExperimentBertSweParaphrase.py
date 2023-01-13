@@ -28,6 +28,11 @@ class ExperimentBertSweParaphrase(ExperimentBert):
 
         dataset_split = dataset_split.remove_columns(['Genre', 'File', 'Sentence 1', 'Sentence 2'])
         # dataset_split = dataset_split.remove_columns(['Genre', 'File', 'Sentence 1', 'Sentence 2', 'Score'])
+
+        # for sample in dataset_split:
+        #     print(sample)
+        #     break
+
         return dataset_split
 
 

@@ -39,7 +39,8 @@ This works for any task that has training data and is a classification or regres
 2. Create a function `reformat_dataset_<task_name>` in `dataset_loader.py`, that converts the dataset into a dataset of desired format.
 3. Add a pointer to this function in the dictionary `TASK_TO_REFORMAT_FUN` above the `load_dataset_by_task` function in the same file. 
 4. Add an entry with the required meta-data for this task in `Experiment.py`, in the dictionary `task_to_info_dict`.
-5. The dataset, reformatting, and meta-data loading is done automatically when an child instance of `Experiment` is used.
+5. Add an entry in `bert_experiment_driver.py` for the corresponding ExperimentBert class
+6. The dataset, reformatting, and meta-data loading is done automatically when a child instance of `Experiment` is used.
 
 ## Results structure
 - Metric results are stored in json-files with the following path:

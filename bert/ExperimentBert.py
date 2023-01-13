@@ -23,22 +23,29 @@ class ExperimentBert(Experiment, ABC):
         assert accumulation_steps == 1 or accumulation_steps % 2 == 0, "accumulation_steps must be 1, or multiple of 2"
         super().__init__(task_name, model_name, data_fraction)
 
+        # self.num_train_epochs = 10
+        self.num_train_epochs = 3
+        self.warmup_ratio = 0.06
+        self.weight_decay = 0.0 if "gpt" in self.model_name else 0.1  # RoBERTa GLUE = 0.1, let GPT use HF default = 0.0
+        self.fp16 = torch.cuda.is_available()
         # Arguments that are not covered by HPO
         training_arguments = TrainingArguments(
             # learning_rate=1e-4,
             output_dir=TRAINER_OUTPUT_PATH,
             per_device_train_batch_size=int(32 / accumulation_steps),
             per_device_eval_batch_size=int(64 / accumulation_steps),
+            # per_device_train_batch_size=1,
+            # per_device_eval_batch_size=1,
             gradient_accumulation_steps=accumulation_steps,
             eval_accumulation_steps=accumulation_steps,
-            num_train_epochs=10,
-            # weight_decay=0.1,
-            # warmup_ratio=0.06,
+            num_train_epochs=self.num_train_epochs,
+            weight_decay=self.weight_decay,
+            warmup_ratio=self.warmup_ratio,
             evaluation_strategy="epoch",
             save_strategy="epoch",
             overwrite_output_dir=True,
             skip_memory_metrics=True,
-            fp16=torch.cuda.is_available(),
+            fp16=self.fp16,
             disable_tqdm=True,
             load_best_model_at_end=True,
             metric_for_best_model="eval_" + self.metric,
@@ -59,7 +66,9 @@ class ExperimentBert(Experiment, ABC):
         # Avoid technical issues by not going beyond 1024
         # self.max_seq_len = min(self.max_seq_len, 1024)
         # self.max_seq_len = min(self.max_seq_len, 512)
-        self.max_seq_len = min(self.max_seq_len, 256)
+        # self.max_seq_len = min(self.max_seq_len, 256)
+        self.max_seq_len = min(self.max_seq_len, 128)
+        # self.max_seq_len = min(self.max_seq_len, 80)
         # self.max_seq_len = min(self.max_seq_len, 64)
         if quick_run:
             self.max_seq_len = min(self.max_seq_len, 64)
@@ -97,33 +106,40 @@ class ExperimentBert(Experiment, ABC):
         if texts2 is None:
             # Manually append eos token
             if "gpt" in self.model_name:
-                return self.tokenizer([t + " " + self.tokenizer.eos_token for t in texts1],
+                # return self.tokenizer([t + " " + self.tokenizer.eos_token for t in texts1],
+                # return self.tokenizer([t + " " + "[CLS]" for t in texts1],
+                return self.tokenizer(texts1,
                                       truncation=True, max_length=self.max_seq_len, padding=True,
+                                      # truncation=True, max_length=self.max_seq_len, padding=False,
                                       return_tensors=ret_tensors)
             else:
-                return self.tokenizer(texts1, truncation=True, max_length=self.max_seq_len, return_tensors=ret_tensors)
+                return self.tokenizer(texts1, truncation=True, max_length=self.max_seq_len, padding=True,
+                                      return_tensors=ret_tensors)
 
         if "gpt" in self.model_name:
             # gpt model, manually encode EOS
+            # TODO: how to handle this? current solution gives only one token_type_ids
             return self.tokenizer(
                 # [t1 + " " + self.tokenizer.eos_token + " " for t1 in texts1],
                 # [t2 + " " + self.tokenizer.eos_token for t2 in texts2],
-                [t1 + " " + "$" + " " for t1 in texts1],
+                # [t1 + " " + "$" + " " for t1 in texts1],
+                # [t1 + " " + "$" + " " for t1 in texts1],
                 # [t2 + " " + "[CLS]" for t2 in texts2],
-                [t2 for t2 in texts2],
+                [t1 + " " + "$" + " " + t2 for t1, t2 in zip(texts1, texts2)],
+                # [t2 for t2 in texts2],
                 truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
         else:
             # regular bert-style sentence pair tokenization
-            return self.tokenizer(texts1, texts2, truncation=True, max_length=self.max_seq_len,
+            return self.tokenizer(texts1, texts2, truncation=True, max_length=self.max_seq_len, padding=True,
                                   return_tensors=ret_tensors)
 
     def _load_tokenizer(self):
         transformers.logging.set_verbosity_error()
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if "gpt" in self.model_name:
-            tokenizer.padding_side = "left"
-            # tokenizer.add_tokens(['$', '[CLS]'], special_tokens=True)
-            tokenizer.add_tokens(['$'], special_tokens=True)
+            # tokenizer.padding_side = "left"
+            tokenizer.add_tokens(['$', '[CLS]'], special_tokens=True)
+            # tokenizer.add_tokens(['$'], special_tokens=True)
         if "gpt2" in self.model_name or tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         return tokenizer
@@ -157,18 +173,22 @@ class ExperimentBert(Experiment, ABC):
         best_run = hp_tune(trainer, self.model_name, self.task_name, self.accumulation_steps, self.quick_run,
                            self.metric, self.direction)
 
-        best_model_dir = find_best_model_and_clean(best_run, self.direction, self.task_name, self.model_name)
+        best_model_dir, hp_dict = find_best_model_and_clean(best_run, self.direction, self.task_name, self.model_name)
         best_model = self._load_model(config, best_model_dir)
         trainer = CustomTrainer.init_trainer(self.training_args, best_model, tokenizer, train_ds, val_ds,
                                              self._compute_metrics)
-        return trainer
+        return trainer, hp_dict
 
     def _run_no_hps(self, config, tokenizer, train_ds, val_ds):
         model = self._load_model(config)
         trainer = CustomTrainer.init_trainer(self.training_args, model, tokenizer, train_ds, val_ds,
                                              self._compute_metrics)
         trainer.train()
-        return trainer
+        hp_dict = {
+            "learning_rate": trainer.args.learning_rate,
+            "per_device_train_batch_size": trainer.args.per_device_train_batch_size
+        }
+        return trainer, hp_dict
 
     def _evaluate(self, trainer, val_ds, test_ds):
         # Try overridden predict
@@ -202,11 +222,20 @@ class ExperimentBert(Experiment, ABC):
         train_ds, val_ds, test_ds = self.create_dataset()
 
         if self.hps:
-            trainer = self._run_hps(self.config, self.tokenizer, train_ds, val_ds)
+            trainer, hp_dict = self._run_hps(self.config, self.tokenizer, train_ds, val_ds)
         else:
-            trainer = self._run_no_hps(self.config, self.tokenizer, train_ds, val_ds)
+            trainer, hp_dict = self._run_no_hps(self.config, self.tokenizer, train_ds, val_ds)
 
         metric_dict = self._evaluate(trainer, val_ds, test_ds)
+
+        hp_dict["batch_size"] = hp_dict["per_device_train_batch_size"] * self.accumulation_steps
+        del hp_dict["per_device_train_batch_size"]
+        hp_dict["num_train_epochs"] = self.num_train_epochs
+        hp_dict["warmup_ratio"] = self.warmup_ratio
+        hp_dict["weight_decay"] = self.weight_decay
+        hp_dict["fp16"] = self.fp16
+
+        metric_dict["hyperparameters"] = hp_dict
 
         # experiment_metric_path = EXPERIMENT_METRICS_PATH_TEMPLATE.format(model=self.model_name, task=self.task_name)
         # with open(experiment_metric_path + "/metrics.json", 'w') as f:

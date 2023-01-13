@@ -14,6 +14,7 @@ task_to_info_dict = {
     "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
     "SweFAQ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
     "ABSAbank-Imm": {"num_classes": 1, "metric": "rmse", "direction": "min", "is_regression": True},
+    "Reviews": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
 }
 
 
@@ -30,6 +31,13 @@ class Experiment(ABC):
         self.is_regression = info_dict["is_regression"]
 
         self.compute_metrics_fun = metric_to_compute_fun[self.metric]
+
+        experiment_metric_path = get_experiment_metrics_path(self.task_name, self.model_name)
+        current_experiment_metric_path = experiment_metric_path + "/metrics.json"
+        my_file = Path(current_experiment_metric_path)
+        if my_file.is_file():
+            print(f"Metrics for model={self.model_name} and task={self.task_name} already exists, skipping!")
+            exit()
 
     @abstractmethod
     def run_impl(self) -> Dict[str, float]:

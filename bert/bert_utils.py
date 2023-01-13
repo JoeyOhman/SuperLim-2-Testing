@@ -1,5 +1,6 @@
 import json
 import shutil
+import numpy as np
 from pathlib import Path
 
 from paths import TRAINER_OUTPUT_PATH, get_experiment_models_path
@@ -32,6 +33,8 @@ def find_best_model_and_clean(best_run, metric_direction, task_name, model_name)
     session_models_prefix = "run-" + hps_session_id
 
     path_best_metric_tuples = []
+    hp_best_metric_tuples = []
+    metric_list = []
     for path in Path(TRAINER_OUTPUT_PATH).rglob(session_models_prefix + "*"):
         # Find the latest checkpoint, that contains info from all epochs/checkpoints
         tups = [(cp_path, int(str(cp_path).split("-")[-1])) for cp_path in path.rglob("checkpoint-*")]
@@ -42,17 +45,28 @@ def find_best_model_and_clean(best_run, metric_direction, task_name, model_name)
             trainer_state = json.load(f)
         best_checkpoint_in_trial_path = trainer_state["best_model_checkpoint"]
         best_checkpoint_in_trial_metric = trainer_state["best_metric"]
+        best_checkpoint_in_trial_hyperparams = trainer_state["trial_params"]
 
         # Add it as tuple to list of checkpoints
         tup = (best_checkpoint_in_trial_path, best_checkpoint_in_trial_metric)
         path_best_metric_tuples.append(tup)
 
+        # Add hyperparameters in trial so we can find the best hyperparameters as well
+        tup_hp = (best_checkpoint_in_trial_hyperparams, best_checkpoint_in_trial_metric)
+        hp_best_metric_tuples.append(tup_hp)
+
+        # Keep all scores for analysis
+        metric_list.append(best_checkpoint_in_trial_metric)
+
     # Select best one according to direction of metric
     if metric_direction == "min":
         best_model_path = min(path_best_metric_tuples, key=lambda x: x[1])[0]
+        best_hp = min(hp_best_metric_tuples, key=lambda x: x[1])[0]
     else:
         best_model_path = max(path_best_metric_tuples, key=lambda x: x[1])[0]
+        best_hp = max(hp_best_metric_tuples, key=lambda x: x[1])[0]
 
     new_path_best_model = _move_best_model_and_clean(best_run, best_model_path, task_name, model_name)
+    best_hp["hps_analysis"] = {"metrics": metric_list, "std": np.std(metric_list)}
 
-    return new_path_best_model
+    return new_path_best_model, best_hp

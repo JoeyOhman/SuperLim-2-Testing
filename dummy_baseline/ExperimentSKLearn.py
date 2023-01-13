@@ -10,13 +10,14 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from Experiment import Experiment
 
 
-# TODO: vectorize, look here: https://github.com/RobinQrtz/superlim_baselines/blob/main/simple_baselines.py
-#  Create inputs for each dataset as it depends on format?
+SUPPORTED_MODELS = ["Decision Tree", "SVM", "Random Forest"]
+
+
+# https://github.com/RobinQrtz/superlim_baselines/blob/main/simple_baselines.py
 class ExperimentSKLearn(Experiment):
 
     def __init__(self, task_name: str, model_name: str):
-        assert model_name in ["Decision Tree", "SVM", "Random Forest"]
-        # model_name = "Decision Tree"
+        assert model_name in SUPPORTED_MODELS
         data_fraction = 1.0
         super().__init__(task_name, model_name, data_fraction)
 
@@ -30,7 +31,13 @@ class ExperimentSKLearn(Experiment):
         pipelines = []
         dev_scores = []
         for vectorizer in vectorizers:
-            model = make_pipeline(vectorizer, model_class())
+            print("Testing vectorizer for:", self.model_name)
+            if self.model_name == "Random Forest":
+                model_instance = model_class(max_depth=2, n_estimators=500, random_state=0, min_samples_split=10,
+                                             min_samples_leaf=2, n_jobs=-1, oob_score=True)
+            else:
+                model_instance = model_class()
+            model = make_pipeline(vectorizer, model_instance)
             model.fit(texts_train, labels_train)
 
             predictions_eval = model.predict(texts_dev)
@@ -103,17 +110,18 @@ class ExperimentSKLearn(Experiment):
 
     # TODO: other tasks
     def get_raw_text_and_labels(self, dataset_split):
+        # sep = ""
+        # sep = " "
+        sep = " [SEP] "
+
         if self.task_name == "DaLAJ":
             return dataset_split["text"], dataset_split["labels"]
         elif self.task_name == "ABSAbank-Imm":
             return dataset_split["text"], dataset_split["labels"]
         elif self.task_name == "SweFAQ":
-            pass
-        elif self.task_name == "SweParaphrase":
-            # sample['Sentence 1'], sample['Sentence 2']
-            sep = ""
-            # sep = " "
             sep = " [SEP] "
+            return [s1 + sep + s2 for s1, s2 in zip(dataset_split["question"], dataset_split["answer"])], dataset_split["labels"]
+        elif self.task_name == "SweParaphrase":
             return [s1 + sep + s2 for s1, s2 in zip(dataset_split["Sentence 1"], dataset_split["Sentence 2"])], dataset_split["labels"]
         else:
             print(f"Task={self.task_name} reformatting function for raw text not implemented")
@@ -122,7 +130,7 @@ class ExperimentSKLearn(Experiment):
 
 if __name__ == '__main__':
     print("DaLAJ:")
-    ExperimentSKLearn("SweParaphrase", "SVM").run()
+    ExperimentSKLearn("SweFAQ", "SVM").run()
     # print("ABSAbank-Imm:")
     # ExperimentDecisionTree("ABSAbank-Imm").run()
     # print("SweParaphrase:")

@@ -113,20 +113,29 @@ def reformat_eval_set_swefaq(ds_split):
     return Dataset.from_dict(new_dataset_dict)
 
 
+def reformat_dataset_Reviews(dataset, split_name):
+    dataset = dataset.rename_column("label", "labels")
+    return dataset
+
+
 TASK_TO_REFORMAT_FUN = {
     "SweParaphrase": reformat_dataset_SweParaphrase,
     "SweFAQ": reformat_dataset_SweFAQ,
     "DaLAJ": reformat_dataset_DaLAJ,
     "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
+    "Reviews": reformat_dataset_Reviews,
 }
 
 
 def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bool = False, reformat: bool = True):
 
-    if from_hf:
+    if task_name == "Reviews":
+        dataset = load_dataset("swedish_reviews")
+        train_ds, dev_ds, test_ds = dataset['train'], dataset['validation'], dataset['test']
+    elif from_hf:
         # From HuggingFace Datasets
         hf_task_name = task_name.lower()
-        if hf_task_name == "absabankimm":
+        if hf_task_name == "absabank-imm":
             hf_task_name = "absabank"
         elif hf_task_name == "sweparaphrase":
             hf_task_name = "swepar"
@@ -146,7 +155,9 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bo
         # dataset = load_dataset('csv', data_files=data_files, delimiter="\t")
         dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
 
-    train_ds, dev_ds, test_ds = dataset['train'], dataset['dev'], dataset['test']
+    if task_name != "Reviews":
+        train_ds, dev_ds, test_ds = dataset['train'], dataset['dev'], dataset['test']
+        # train_ds, dev_ds, test_ds = dataset['train'], dataset['validation'], dataset['test']
 
     # Reformat raw data to training tasks
     if reformat:
