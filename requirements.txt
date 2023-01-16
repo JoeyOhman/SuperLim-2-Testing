@@ -7,3 +7,4 @@ datasets~=2.5.1
 wandb==0.13.3
 evaluate~=0.2.2
 torch
+huggingface-hub
