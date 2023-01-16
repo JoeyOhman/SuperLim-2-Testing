@@ -20,7 +20,7 @@ def _move_best_model_and_clean(best_run, best_model_path, task_name, model_name)
     new_path_best_model = experiment_model_path
 
     hps_session_id = best_run.run_id.split("_")[0]
-    session_models_prefix = "run-" + hps_session_id
+    session_models_prefix = "checkpoint-" + hps_session_id
     for path in Path(TRAINER_OUTPUT_PATH).rglob(session_models_prefix + "*"):
         # print(path)
         shutil.rmtree(path)
@@ -30,7 +30,7 @@ def _move_best_model_and_clean(best_run, best_model_path, task_name, model_name)
 
 def find_best_model_and_clean(best_run, metric_direction, task_name, model_name):
     hps_session_id = best_run.run_id.split("_")[0]
-    session_models_prefix = "run-" + hps_session_id
+    session_models_prefix = "checkpoint-" + hps_session_id
 
     path_best_metric_tuples = []
     hp_best_metric_tuples = []
