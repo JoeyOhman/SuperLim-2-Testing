@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEBUG=1
+DEBUG=0
 
 # Only use wandb if not debugging
 if [ "$DEBUG" == 0 ]; then
@@ -12,7 +12,7 @@ if [ "$DEBUG" == 0 ]; then
 else
   export WANDB_MODE=offline
   export WANDB_DISABLED=true
-  export CUDA_VISIBLE_DEVICES="6"
+  export CUDA_VISIBLE_DEVICES="7"
 fi
 
 # which python
@@ -27,14 +27,14 @@ fi
 
 mkdir -p logs
 
-# declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k")
-declare -a models=("KB/bert-base-swedish-cased")
+# declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "")
+# declare -a models=("KB/bert-base-swedish-cased")
 # declare -a models=("KB/bert-base-swedish-cased" "gpt2" "gpt2-medium" "microsoft/mdeberta-v3-base")
 # declare -a models=("AI-Sweden/gpt-sw3-126m-private")
 # declare -a models=("albert-base-v2")
 # declare -a models=("gpt2")
 # declare -a models=("gpt2-medium")
-# declare -a models=("AI-Sweden/gpt-sw3-356m-private")
+declare -a models=("AI-Sweden/gpt-sw3-356m-private")
 # declare -a models=("microsoft/mdeberta-v3-base")
 # declare -a tasks=("ABSAbankImm" "DaLAJ" "SweFAQ" "SweParaphrase")
 # declare -a tasks=("SweFAQ")
