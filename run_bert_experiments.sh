@@ -5,12 +5,14 @@ DEBUG=1
 # Only use wandb if not debugging
 if [ "$DEBUG" == 0 ]; then
   export WANDB_ENTITY=joeyohman
-  export WANDB_PROJECT=SuperLim2
+  export WANDB_PROJECT=SuperLim2023
   api_key=$(cat api_wandb_key.txt)
   export WANDB_API_KEY=${api_key}
+  export CUDA_VISIBLE_DEVICES="6,7"
 else
   export WANDB_MODE=offline
   export WANDB_DISABLED=true
+  export CUDA_VISIBLE_DEVICES="6"
 fi
 
 # which python

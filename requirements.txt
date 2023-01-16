@@ -1,6 +1,6 @@
 numpy==1.23.3
 ray[tune]~=2.0.0
-transformers~=4.22.1
+git+https://github.com/huggingface/transformers.git
 sklearn~=0.0
 scikit-learn~=1.0.2
 datasets~=2.5.1

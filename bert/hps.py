@@ -172,7 +172,7 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, accumulat
         name=run_name,
         callbacks=[
             # ManualMetricsCallback(metric),
-            WandbLoggerCallback(project="SuperLim2",
+            WandbLoggerCallback(project="SuperLim2023",
                                 entity="joeyohman",
                                 group=run_name + "_" + dt_string,
                                 # settings=wandb.Settings(start_method="fork"),
