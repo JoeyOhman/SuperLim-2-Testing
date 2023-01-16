@@ -23,8 +23,8 @@ class ExperimentBert(Experiment, ABC):
         assert accumulation_steps == 1 or accumulation_steps % 2 == 0, "accumulation_steps must be 1, or multiple of 2"
         super().__init__(task_name, model_name, data_fraction)
 
-        # self.num_train_epochs = 10
-        self.num_train_epochs = 3
+        self.num_train_epochs = 10
+        # self.num_train_epochs = 3
         self.warmup_ratio = 0.06
         self.weight_decay = 0.0 if "gpt" in self.model_name else 0.1  # RoBERTa GLUE = 0.1, let GPT use HF default = 0.0
         self.fp16 = torch.cuda.is_available()
