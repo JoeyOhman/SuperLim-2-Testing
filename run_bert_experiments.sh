@@ -20,10 +20,10 @@ fi
 export PYTHONPATH="${pwd}:$PYTHONPATH"
 
 # These pip installs are setup required in the docker container, skip if debug (which is used locally)
-if [ "$DEBUG" == 0 ]; then
-  pip install evaluate
-  pip install sentencepiece
-fi
+# if [ "$DEBUG" == 0 ]; then
+#   pip install evaluate
+#   pip install sentencepiece
+# fi
 
 mkdir -p logs
 

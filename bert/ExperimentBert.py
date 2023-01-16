@@ -15,7 +15,7 @@ from paths import TRAINER_OUTPUT_PATH
 from utils import get_device
 
 
-# Works for all BERT models, but need to be subclasses for each task
+# Works for all TRANSFORMER models, including GPT, but need to be subclassed for each task
 class ExperimentBert(Experiment, ABC):
 
     def __init__(self, task_name: str, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool,
