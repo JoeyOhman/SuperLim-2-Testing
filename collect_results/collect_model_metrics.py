@@ -3,6 +3,28 @@ from collections import defaultdict
 from pathlib import Path
 
 from paths import METRICS_PATH
+from store_model_sizes import load_model_sizes
+
+TASK_NAMES = [
+    "DaLAJ",
+    "Swedish FAQ",
+    "SweFraCas",
+    "SweWinograd",
+    "SweWinogender",
+    "SweDiagnostics",
+    "SweParaphrase",
+    "SweWiC",
+    "SweSAT",
+    "Swedish Analogy",
+    "SuperSim",
+    "ABSA",
+]
+
+TASK_NAME_MAP = {
+    "ABSAbank-Imm": "ABSA",
+}
+
+MODEL_SIZES = load_model_sizes()
 
 
 def load_all_metric_dicts():
@@ -20,6 +42,7 @@ def get_all_tasks(metric_dicts):
     tasks = {}
     for metric_dict in metric_dicts:
         task = metric_dict["task"]
+        task = TASK_NAME_MAP.get(task, task)
         direction = metric_dict["direction"]
         metric_name = metric_dict["metric"]
         tasks[task] = (metric_name, direction)
@@ -43,15 +66,18 @@ def get_init_model_dict(model, tasks):
         "model": {
             "model_name": model,
             "model_type": model_type,
-            "number_params": 0,
-            "data_size": 0
+            "number_params": MODEL_SIZES.get(model, None),
+            "data_size": None
         },
         "tasks": {
-            task: {
-                "metric": metric_name,
-                "dev": 100 if direction == "min" else -100,
-                "test": 100 if direction == "min" else -100
-            } for task, metric_name, direction in tasks
+            TASK_NAME_MAP.get(task, task): {
+                # "metric": metric_name,
+                # "dev": 100 if direction == "min" else -100,
+                # "test": 100 if direction == "min" else -100
+                "dev": None,
+                "test": None
+            # } for task, metric_name, direction in tasks
+            } for task in TASK_NAMES
         },
         "model_card": ""
     }
@@ -59,7 +85,7 @@ def get_init_model_dict(model, tasks):
 
 def add_task_to_model_dict(model_dicts, model, task, metric_name, dev, test):
     model_dicts[model]["tasks"][task] = {
-        "metric": metric_name,
+        # "metric": metric_name,
         "dev": dev,
         "test": test
     }
@@ -70,6 +96,7 @@ def create_and_save_model_dicts(metric_dicts, tasks):
     for metric_dict in metric_dicts:
         # Extract properties
         task = metric_dict["task"]
+        task = TASK_NAME_MAP.get(task, task)
         model = metric_dict["model"]
         metric_name = metric_dict["metric"]
         dev = metric_dict["eval"]

@@ -1,0 +1,15 @@
+{
+	"KB/bert-base-swedish-cased": 124690944,
+	"KBLab/megatron-bert-base-swedish-cased-600k": 135291648,
+	"KBLab/bert-base-swedish-cased-new": 135193344,
+	"xlm-roberta-base": 278043648,
+	"AI-Nordics/bert-large-swedish-cased": 335215616,
+	"KBLab/megatron-bert-large-swedish-cased-165k": 369554432,
+	"xlm-roberta-large": 559890432,
+	"AI-Sweden-Models/gpt-sw3-126m": 135780864,
+	"AI-Sweden-Models/gpt-sw3-356m": 369944576,
+	"gpt2": 124439808,
+	"gpt2-medium": 354823168,
+	"sentence-transformers/paraphrase-multilingual-mpnet-base-v2": 278043648,
+	"microsoft/mdeberta-v3-base": 278218752
+}

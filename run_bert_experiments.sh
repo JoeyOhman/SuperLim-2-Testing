@@ -29,13 +29,13 @@ mkdir -p logs
 
 # declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "")
 # declare -a models=("KB/bert-base-swedish-cased")
-declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "gpt2" "AI-Sweden-Models/gpt-sw3-126m")
+declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m" "xlm-roberta-large")
 # declare -a models=("gpt2")
 # declare -a models=("gpt2-medium")
 # declare -a models=("AI-Sweden/gpt-sw3-356m-private")
 # declare -a models=("microsoft/mdeberta-v3-base")
 # declare -a tasks=("ABSAbankImm" "DaLAJ" "SweFAQ" "SweParaphrase")
-declare -a tasks=("ABSAbankImm" "SweParaphrase")
+declare -a tasks=("ABSAbankImm" "SweParaphrase" "DaLAJ")
 # declare -a tasks=("Reviews")
 
 # Loop through models

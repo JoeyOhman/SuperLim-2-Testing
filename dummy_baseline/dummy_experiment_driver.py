@@ -4,7 +4,8 @@ from utils import set_seed
 
 
 def main():
-    tasks = ["SweParaphrase", "SweFAQ", "DaLAJ", "ABSAbank-Imm"]
+    # tasks = ["SweParaphrase", "SweFAQ", "DaLAJ", "ABSAbank-Imm"]
+    tasks = ["SweParaphrase", "ABSAbank-Imm"]
     for task in tasks:
         ExperimentDummy(task, is_random=True).run()
         ExperimentDummy(task, is_random=False).run()
