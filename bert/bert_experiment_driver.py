@@ -23,7 +23,7 @@ def main(args):
     # data_fraction = 0.25
     quick_run = False
     hps = True
-    accumulation_steps = 1
+    accumulation_steps = 2
 
     bert_class = task_to_bert_class[args.task_name]
     bert_class(args.model_name, accumulation_steps, data_fraction, hps, quick_run).run()
