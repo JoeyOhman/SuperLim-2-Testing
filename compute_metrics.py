@@ -1,4 +1,5 @@
 import evaluate
+import krippendorff
 import numpy as np
 from sklearn.metrics import mean_squared_error
 
@@ -10,6 +11,13 @@ from sklearn.metrics import mean_squared_error
 accuracy_metric = evaluate.load("accuracy")
 f1_metric = evaluate.load("f1", )
 spearmanr_metric = evaluate.load("spearmanr")
+
+
+def _ensure_flattened(list_or_array):
+    if isinstance(list_or_array[0], list) or isinstance(list_or_array[0], np.ndarray):
+        list_or_array = [item for sublist in list_or_array for item in sublist]
+
+    return list_or_array
 
 
 def _compute_metrics_rmse(preds_labels_tuple):
@@ -57,17 +65,33 @@ def _compute_metrics_f1(preds_labels_tuple):
     return f1
 
 
+def _compute_metrics_krippendorff(preds_labels_tuple):
+    predictions, labels = preds_labels_tuple
+    predictions = _ensure_flattened(predictions)
+    labels = _ensure_flattened(labels)
+    # TODO: handle when predictions or list is not flattened (flatten them)
+    alpha = krippendorff.alpha(reliability_data=[predictions, labels])
+    return {"krippendorff": alpha}
+
+
 metric_to_compute_fun = {
     # "rmse": _compute_metrics_rmse,
     "rmse": _compute_metrics_rmse_and_normalized_spearmanr,
     "accuracy": _compute_metrics_accuracy,
     "f1": _compute_metrics_f1,
     "spearmanr": _compute_metrics_normalized_spearmanr,
-    "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr
+    "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr,
+    "krippendorff": _compute_metrics_krippendorff
 }
 
 if __name__ == '__main__':
-    preds = [2.3, 3., 5., 4.]
+    # preds = [2.3, 3., 5., 4.]
+    preds = [[2.3], [3.], [5.], [4.]]
+    # labels = np.array([3, 2, 6, 4.4])
     labels = [3, 2, 6, 4.4]
-    res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
+    # {'rmse': 0.8139410298049854, 'spearmanr': 0.8999999999999999}
+    # res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
+    # res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
+    # {'krippendorff': 0.8268135561572215}
+    res = _compute_metrics_krippendorff((preds, labels))
     print(res)

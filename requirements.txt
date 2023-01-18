@@ -9,3 +9,4 @@ evaluate~=0.2.2
 torch
 huggingface-hub
 sentencepiece
+krippendorff

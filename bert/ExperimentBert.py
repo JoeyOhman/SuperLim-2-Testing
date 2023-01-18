@@ -99,39 +99,57 @@ class ExperimentBert(Experiment, ABC):
 
         return train_ds, dev_ds, test_ds
 
-    def batch_tokenize(self, texts1, texts2=None, ret_tensors=None):
-        # print(texts1)
-        assert not isinstance(texts1, str)
-        # Not a sentence pair
-        if texts2 is None:
-            # Manually append eos token
-            if "gpt" in self.model_name:
-                # return self.tokenizer([t + " " + self.tokenizer.eos_token for t in texts1],
-                # return self.tokenizer([t + " " + "[CLS]" for t in texts1],
-                return self.tokenizer(texts1,
-                                      truncation=True, max_length=self.max_seq_len, padding=True,
-                                      # truncation=True, max_length=self.max_seq_len, padding=False,
-                                      return_tensors=ret_tensors)
-            else:
-                return self.tokenizer(texts1, truncation=True, max_length=self.max_seq_len, padding=True,
-                                      return_tensors=ret_tensors)
+    def tokenize_gpt(self, texts1, texts2=None, texts3=None, ret_tensors=None):
+        sep = " $ "
+        # Only texts1
+        if texts2 is None and texts3 is None:
+            return self.tokenizer(texts1,
+                                  truncation=True, max_length=self.max_seq_len, padding=True,
+                                  return_tensors=ret_tensors)
 
-        if "gpt" in self.model_name:
-            # gpt model, manually encode EOS
-            # TODO: how to handle this? current solution gives only one token_type_ids
+        # Only texts1 and texts2
+        elif texts2 is not None:
             return self.tokenizer(
-                # [t1 + " " + self.tokenizer.eos_token + " " for t1 in texts1],
-                # [t2 + " " + self.tokenizer.eos_token for t2 in texts2],
-                # [t1 + " " + "$" + " " for t1 in texts1],
-                # [t1 + " " + "$" + " " for t1 in texts1],
-                # [t2 + " " + "[CLS]" for t2 in texts2],
-                [t1 + " " + "$" + " " + t2 for t1, t2 in zip(texts1, texts2)],
-                # [t2 for t2 in texts2],
+                [t1 + sep + t2 for t1, t2 in zip(texts1, texts2)],
                 truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
+
+        # All 3 texts
         else:
+            return self.tokenizer(
+                [t1 + sep + t2 + sep + t3 for t1, t2, t3 in zip(texts1, texts2, texts3)],
+                truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
+
+    def tokenize_bert(self, texts1, texts2=None, texts3=None, ret_tensors=None):
+
+        # Only texts1
+        if texts2 is None and texts3 is None:
+            return self.tokenizer(texts1, truncation=True, max_length=self.max_seq_len, padding=True,
+                                  return_tensors=ret_tensors)
+
+        # Only texts1 and texts2
+        elif texts2 is not None:
             # regular bert-style sentence pair tokenization
             return self.tokenizer(texts1, texts2, truncation=True, max_length=self.max_seq_len, padding=True,
                                   return_tensors=ret_tensors)
+
+        # All 3 texts
+        else:
+            # regular bert-style sentence pair tokenization
+            return self.tokenizer(texts1, texts2, texts3, truncation=True, max_length=self.max_seq_len, padding=True,
+                                  return_tensors=ret_tensors)
+
+    def batch_tokenize(self, texts1, texts2=None, texts3=None, ret_tensors=None):
+        # Don't allow strings directly, only batches (even if size 1 batch)
+        assert not isinstance(texts1, str)
+        # Don't allow sending 2 texts, with texts1 and texts3
+        if texts2 is None:
+            assert texts3 is None
+
+        if "gpt" in self.model_name:
+            return self.tokenize_gpt(texts1, texts2, texts3, ret_tensors)
+        else:
+            return self.tokenize_bert(texts1, texts2, texts3, ret_tensors)
+
 
     def _load_tokenizer(self):
         transformers.logging.set_verbosity_error()

@@ -13,7 +13,8 @@ task_to_info_dict = {
     # "SweParaphrase": {"num_classes": 1, "metric": "spearmanr", "direction": "max"},
     "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
     "SweFAQ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
-    "ABSAbank-Imm": {"num_classes": 1, "metric": "rmse", "direction": "min", "is_regression": True},
+    # "ABSAbank-Imm": {"num_classes": 1, "metric": "rmse", "direction": "min", "is_regression": True},
+    "ABSAbank-Imm": {"num_classes": 1, "metric": "krippendorff", "direction": "max", "is_regression": True},
     "Reviews": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
 }
 
