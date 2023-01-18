@@ -64,10 +64,10 @@ class ExperimentBert(Experiment, ABC):
         self.tokenizer = self._load_tokenizer()
 
         # Avoid technical issues by not going beyond 1024
-        self.max_seq_len = min(self.max_seq_len, 1024)
+        # self.max_seq_len = min(self.max_seq_len, 1024)
         # self.max_seq_len = min(self.max_seq_len, 512)
         # self.max_seq_len = min(self.max_seq_len, 256)
-        # self.max_seq_len = min(self.max_seq_len, 128)
+        self.max_seq_len = min(self.max_seq_len, 128)
         # self.max_seq_len = min(self.max_seq_len, 80)
         # self.max_seq_len = min(self.max_seq_len, 64)
         if quick_run:
