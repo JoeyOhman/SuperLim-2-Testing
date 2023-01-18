@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEBUG=1
+DEBUG=0
 
 # Only use wandb if not debugging
 if [ "$DEBUG" == 0 ]; then
