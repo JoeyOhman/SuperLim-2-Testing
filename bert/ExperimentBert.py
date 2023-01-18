@@ -155,9 +155,9 @@ class ExperimentBert(Experiment, ABC):
         transformers.logging.set_verbosity_error()
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if "gpt" in self.model_name:
-            # tokenizer.padding_side = "left"
-            tokenizer.add_tokens(['$', '[CLS]'], special_tokens=True)
-            # tokenizer.add_tokens(['$'], special_tokens=True)
+            tokenizer.padding_side = "left"
+            tokenizer.add_tokens(['$'], special_tokens=True)
+            # tokenizer.add_tokens(['$', '[CLS]'], special_tokens=True)
         if "gpt2" in self.model_name or tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         return tokenizer
@@ -165,7 +165,7 @@ class ExperimentBert(Experiment, ABC):
     def _load_config(self):
         config = AutoConfig.from_pretrained(self.model_name)
         config.num_labels = self.num_classes
-        if "gpt2" in self.model_name:
+        if "gpt2" in self.model_name or config.pad_token_id is None:
             config.pad_token_id = config.eos_token_id
         return config
 
