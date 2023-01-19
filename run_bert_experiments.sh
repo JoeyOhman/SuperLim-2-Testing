@@ -51,6 +51,7 @@ do
         metrics_file="results/experiments/metrics/${task}/${safe_model_name}/metrics.json"
         if test -f "$metrics_file"; then
             echo "$metrics_file exists, SKIPPING."
+            continue
         fi
         log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S")_${safe_model_name}_${task}.txt"
         run_cmd="python3 bert/bert_experiment_driver.py --model_name $model --task_name $task"
