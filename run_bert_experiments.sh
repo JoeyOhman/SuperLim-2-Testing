@@ -8,7 +8,8 @@ if [ "$DEBUG" == 0 ]; then
   export WANDB_PROJECT=SuperLim2023
   api_key=$(cat api_wandb_key.txt)
   export WANDB_API_KEY=${api_key}
-  export CUDA_VISIBLE_DEVICES="4,5,6,7"
+  # export CUDA_VISIBLE_DEVICES="4,5,6,7"
+  export CUDA_VISIBLE_DEVICES="5,6,7"
 else
   export WANDB_MODE=offline
   export WANDB_DISABLED=true
