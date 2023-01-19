@@ -4,11 +4,12 @@ import random
 from collections import defaultdict
 
 from datasets import load_dataset, Dataset
+from pathlib import Path
 
-from paths import TSV_PATH
+from paths import TSV_PATH, DATASET_PATH
 
 # DATASET_PATH_TEMPLATE = os.path.join(JSONL_PATH, "{task}")
-DATASET_PATH_TEMPLATE = os.path.join(TSV_PATH, "{task}")
+DATASET_PATH_TEMPLATE = os.path.join(DATASET_PATH, "{task}")
 
 
 def reformat_dataset_SweParaphrase(dataset, split_name):
@@ -113,6 +114,26 @@ def reformat_eval_set_swefaq(ds_split):
     return Dataset.from_dict(new_dataset_dict)
 
 
+def reformat_dataset_SweWiC(dataset, split_name):
+    new_dataset_dict = {
+        "sentence1": [],
+        "sentence2": [],
+        "word1": [],
+        "word2": [],
+        "labels": []
+    }
+
+    for sample in dataset:
+        new_dataset_dict["sentence1"].append(sample["first"]["context"])
+        new_dataset_dict["sentence2"].append(sample["second"]["context"])
+        new_dataset_dict["word1"].append(sample["first"]["word"]["text"])
+        new_dataset_dict["word2"].append(sample["second"]["word"]["text"])
+        label = 1 if sample["same_sense"] else 0
+        new_dataset_dict["labels"].append(label)
+
+    return Dataset.from_dict(new_dataset_dict)
+
+
 def reformat_dataset_Reviews(dataset, split_name):
     dataset = dataset.rename_column("label", "labels")
     return dataset
@@ -123,6 +144,7 @@ TASK_TO_REFORMAT_FUN = {
     "SweFAQ": reformat_dataset_SweFAQ,
     "DaLAJ": reformat_dataset_DaLAJ,
     "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
+    "SweWiC": reformat_dataset_SweWiC,
     "Reviews": reformat_dataset_Reviews,
 }
 
@@ -145,15 +167,22 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bo
         # From local TSV
         # data_files = glob.glob(DATASET_PATH + "*.tsv")
         dataset_path = DATASET_PATH_TEMPLATE.format(task=task_name)
+        # data_files = glob.glob(DATASET_PATH + "train.*")
+        extension = [pt for pt in Path(dataset_path).rglob("train.*")][0].name.split(".")[-1]
+        is_json = "json" in extension
+
         data_files = {
-            "train": os.path.join(dataset_path, "train.tsv"),
-            "dev": os.path.join(dataset_path, "dev.tsv"),
-            "test": os.path.join(dataset_path, "test.tsv")
+            "train": os.path.join(dataset_path, f"train.{extension}"),
+            "dev": os.path.join(dataset_path, f"dev.{extension}"),
+            "test": os.path.join(dataset_path, f"test.{extension}")
         }
 
         # dataset = load_dataset('json', data_files=data_files)
         # dataset = load_dataset('csv', data_files=data_files, delimiter="\t")
-        dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if is_json:
+            dataset = load_dataset('json', data_files=data_files)
+        else:
+            dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
 
     if task_name != "Reviews":
         train_ds, dev_ds, test_ds = dataset['train'], dataset['dev'], dataset['test']
@@ -183,7 +212,7 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bo
 
 
 if __name__ == '__main__':
-    dataset_main = load_dataset_by_task("SweParaphrase", 1.0, True)
+    dataset_main = load_dataset_by_task("SweWiC", 1.0)
     print(dataset_main)
     # ds = load_dataset("super_glue", "boolq")
     # print(ds)

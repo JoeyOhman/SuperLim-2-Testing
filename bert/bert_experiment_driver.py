@@ -7,15 +7,22 @@ from bert.ExperimentBertDaLAJ import ExperimentBertDaLAJ
 from bert.ExperimentBertReviews import ExperimentBertReviews
 from bert.ExperimentBertSweFAQ import ExperimentBertSweFAQ
 from bert.ExperimentBertSweParaphrase import ExperimentBertSweParaphrase
+from bert.ExperimentBertSweWiC import ExperimentBertSweWiC
 from utils import set_seed
 
 task_to_bert_class = {
-    "ABSAbankImm": ExperimentBertABSAbankImm,
+    "ABSAbank-Imm": ExperimentBertABSAbankImm,
     "DaLAJ": ExperimentBertDaLAJ,
     "SweFAQ": ExperimentBertSweFAQ,
     "SweParaphrase": ExperimentBertSweParaphrase,
+    "SweWiC": ExperimentBertSweWiC,
     "Reviews": ExperimentBertReviews,
 }
+
+
+ACC_STEPS_2 = ["AI-Nordics/bert-large-swedish-cased", "KBLab/megatron-bert-large-swedish-cased-165k", "xlm-roberta-base"]
+ACC_STEPS_4 = ["AI-Sweden-Models/gpt-sw3-126m", "gpt2"]
+ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium", "xlm-roberta-large"]
 
 
 def main(args):
@@ -23,7 +30,17 @@ def main(args):
     # data_fraction = 0.25
     quick_run = False
     hps = True
-    accumulation_steps = 4
+
+    if args.model_name in ACC_STEPS_8:
+        accumulation_steps = 8
+    elif args.model_name in ACC_STEPS_4:
+        accumulation_steps = 4
+    elif args.model_name in ACC_STEPS_2:
+        accumulation_steps = 2
+    else:
+        accumulation_steps = 1
+
+    # accumulation_steps = 4
 
     bert_class = task_to_bert_class[args.task_name]
     bert_class(args.model_name, accumulation_steps, data_fraction, hps, quick_run).run()

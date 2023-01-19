@@ -99,57 +99,75 @@ class ExperimentBert(Experiment, ABC):
 
         return train_ds, dev_ds, test_ds
 
-    def tokenize_gpt(self, texts1, texts2=None, texts3=None, ret_tensors=None):
+    def tokenize_gpt(self, texts1, texts2=None, texts3=None, texts4=None, ret_tensors=None):
         sep = " $ "
-        # Only texts1
-        if texts2 is None and texts3 is None:
+        # Only texts1 (2, 3, 4 = None)
+        if texts2 is None and texts3 is None and texts4 is None:
             return self.tokenizer(texts1,
                                   truncation=True, max_length=self.max_seq_len, padding=True,
                                   return_tensors=ret_tensors)
 
-        # Only texts1 and texts2
-        elif texts2 is not None:
+        # Only texts1 and texts2 (3, 4 = None)
+        elif texts3 is None and texts4 is None:
             return self.tokenizer(
                 [t1 + sep + t2 for t1, t2 in zip(texts1, texts2)],
                 truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
 
-        # All 3 texts
-        else:
+        # Only texts1, texts2, and texts3 (4 = None)
+        elif texts4 is None:
             return self.tokenizer(
                 [t1 + sep + t2 + sep + t3 for t1, t2, t3 in zip(texts1, texts2, texts3)],
                 truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
+        # All 4 texts
+        else:
+            return self.tokenizer(
+                [t1 + sep + t2 + sep + t3 + sep + t4 for t1, t2, t3, t4 in zip(texts1, texts2, texts3, texts4)],
+                truncation=True, max_length=self.max_seq_len, padding=True, return_tensors=ret_tensors)
 
-    def tokenize_bert(self, texts1, texts2=None, texts3=None, ret_tensors=None):
+    def tokenize_bert(self, texts1, texts2=None, texts3=None, texts4=None, ret_tensors=None):
+
+        # Combine texts3 and texts4
+        if texts4 is not None:
+            texts3 = [t3 + " [SEP] " + t4 for t3, t4 in zip(texts3, texts4)]
+            texts4 = None
+
+        # Combine texts2 and texts3
+        if texts3 is not None:
+            texts2 = [t2 + " [SEP] " + t3 for t2, t3 in zip(texts2, texts3)]
+            texts3 = None
 
         # Only texts1
-        if texts2 is None and texts3 is None:
+        if texts2 is None:
+            # single text
             return self.tokenizer(texts1, truncation=True, max_length=self.max_seq_len, padding=True,
                                   return_tensors=ret_tensors)
 
         # Only texts1 and texts2
-        elif texts2 is not None:
-            # regular bert-style sentence pair tokenization
+        else:
+            # text-pair
             return self.tokenizer(texts1, texts2, truncation=True, max_length=self.max_seq_len, padding=True,
                                   return_tensors=ret_tensors)
 
         # All 3 texts
-        else:
-            # regular bert-style sentence pair tokenization
-            return self.tokenizer(texts1, texts2, texts3, truncation=True, max_length=self.max_seq_len, padding=True,
-                                  return_tensors=ret_tensors)
+        # else:
+        #     print("All 3 texts")
+        #     return self.tokenizer(texts1, texts2, texts3, truncation=True, max_length=self.max_seq_len, padding=True,
+        #                           return_tensors=ret_tensors)
 
-    def batch_tokenize(self, texts1, texts2=None, texts3=None, ret_tensors=None):
+    def batch_tokenize(self, texts1, texts2=None, texts3=None, texts4=None, ret_tensors=None):
         # Don't allow strings directly, only batches (even if size 1 batch)
         assert not isinstance(texts1, str)
         # Don't allow sending 2 texts, with texts1 and texts3
+        if texts3 is None:
+            assert texts4 is None
         if texts2 is None:
             assert texts3 is None
+            assert texts4 is None
 
         if "gpt" in self.model_name:
-            return self.tokenize_gpt(texts1, texts2, texts3, ret_tensors)
+            return self.tokenize_gpt(texts1, texts2, texts3, texts4, ret_tensors)
         else:
-            return self.tokenize_bert(texts1, texts2, texts3, ret_tensors)
-
+            return self.tokenize_bert(texts1, texts2, texts3, texts4, ret_tensors)
 
     def _load_tokenizer(self):
         transformers.logging.set_verbosity_error()

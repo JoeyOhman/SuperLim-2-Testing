@@ -65,13 +65,33 @@ def _compute_metrics_f1(preds_labels_tuple):
     return f1
 
 
-def _compute_metrics_krippendorff(preds_labels_tuple):
+def _compute_metrics_krippendorff(preds_labels_tuple, level_of_measurement):
     predictions, labels = preds_labels_tuple
+    if np.ndim(predictions) > 1:
+        predictions = np.argmax(predictions, axis=1)
     predictions = _ensure_flattened(predictions)
     labels = _ensure_flattened(labels)
-    # TODO: handle when predictions or list is not flattened (flatten them)
-    alpha = krippendorff.alpha(reliability_data=[predictions, labels])
-    return {"krippendorff": alpha}
+    # TODO: add accuracy/rmse for debugging
+    # level_of_measurement is:
+    # classification: nominal
+    # regression: interval
+    alpha = krippendorff.alpha(reliability_data=[predictions, labels], level_of_measurement=level_of_measurement)
+    metric_name = f"krippendorff_{level_of_measurement}"
+    return {metric_name: alpha}
+
+
+def _compute_metrics_krippendorff_classification(preds_labels_tuple):
+    alpha = _compute_metrics_krippendorff(preds_labels_tuple, "nominal")
+    acc = _compute_metrics_accuracy(preds_labels_tuple)
+    alpha.update(acc)
+    return alpha
+
+
+def _compute_metrics_krippendorff_regression(preds_labels_tuple):
+    alpha = _compute_metrics_krippendorff(preds_labels_tuple, "interval")
+    rmse = _compute_metrics_rmse(preds_labels_tuple)
+    alpha.update(rmse)
+    return alpha
 
 
 metric_to_compute_fun = {
@@ -81,7 +101,8 @@ metric_to_compute_fun = {
     "f1": _compute_metrics_f1,
     "spearmanr": _compute_metrics_normalized_spearmanr,
     "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr,
-    "krippendorff": _compute_metrics_krippendorff
+    "krippendorff_nominal": _compute_metrics_krippendorff_classification,
+    "krippendorff_interval": _compute_metrics_krippendorff_regression
 }
 
 if __name__ == '__main__':
@@ -93,5 +114,8 @@ if __name__ == '__main__':
     # res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
     # res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
     # {'krippendorff': 0.8268135561572215}
-    res = _compute_metrics_krippendorff((preds, labels))
+    preds = [1, 2, 3, 4]
+    labels = [1, 2, 3, 5]
+    # res = _compute_metrics_krippendorff_regression((preds, labels))
+    res = _compute_metrics_krippendorff_classification((preds, labels))
     print(res)

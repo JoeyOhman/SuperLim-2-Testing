@@ -28,14 +28,15 @@ export PYTHONPATH="${pwd}:$PYTHONPATH"
 mkdir -p logs
 
 # declare -a models=("KB/bert-base-swedish-cased")
-# declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m" "xlm-roberta-large")
-declare -a models=("AI-Sweden-Models/gpt-sw3-126m")
+declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m")
+# declare -a models=("AI-Sweden-Models/gpt-sw3-126m")
 # declare -a models=("gpt2")
 # declare -a models=("gpt2-medium")
-# declare -a tasks=("ABSAbankImm" "DaLAJ" "SweFAQ" "SweParaphrase")
-# declare -a tasks=("ABSAbankImm" "SweParaphrase" "DaLAJ")
-declare -a tasks=("SweParaphrase")
-# declare -a tasks=("ABSAbankImm")
+# declare -a tasks=("ABSAbank-Imm" "DaLAJ" "SweFAQ" "SweParaphrase")
+declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC")
+# declare -a tasks=("SweParaphrase")
+# declare -a tasks=("SweWiC")
+# declare -a tasks=("ABSAbank-Imm")
 # declare -a tasks=("Reviews")
 
 # Loop through models
@@ -46,6 +47,11 @@ do
     do
         # Replace slash with dash in model name to avoid creating sub-directories
         safe_model_name="${model/"/"/-}"
+        metrics_file="results/experiments/metrics/${task}/${safe_model_name}/metrics.json"
+        if test -f "$metrics_file"; then
+            echo "$metrics_file exists, SKIPPING."
+        fi
+        continue
         log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S")_${safe_model_name}_${task}.txt"
         run_cmd="python3 bert/bert_experiment_driver.py --model_name $model --task_name $task"
         echo "****************************************************************************************"
