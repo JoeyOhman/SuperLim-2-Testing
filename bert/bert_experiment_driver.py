@@ -20,9 +20,10 @@ task_to_bert_class = {
 }
 
 
-ACC_STEPS_2 = ["AI-Nordics/bert-large-swedish-cased", "KBLab/megatron-bert-large-swedish-cased-165k", "xlm-roberta-base"]
-ACC_STEPS_4 = ["AI-Sweden-Models/gpt-sw3-126m", "gpt2"]
-ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium", "xlm-roberta-large"]
+ACC_STEPS_2 = []
+# ACC_STEPS_2 = ["AI-Nordics/bert-large-swedish-cased", "KBLab/megatron-bert-large-swedish-cased-165k", "xlm-roberta-base"]
+ACC_STEPS_4 = ["AI-Sweden-Models/gpt-sw3-126m", "gpt2", "xlm-roberta-large"]
+ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium"]
 
 
 def main(args):

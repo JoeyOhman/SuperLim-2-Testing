@@ -69,13 +69,8 @@ def _compute_metrics_krippendorff(preds_labels_tuple, level_of_measurement):
     predictions, labels = preds_labels_tuple
     if np.ndim(predictions) > 1 and level_of_measurement != "interval":
         predictions = np.argmax(predictions, axis=1)
-    print("Predictions original:")
-    print(predictions)
     predictions = _ensure_flattened(predictions)
-    print("Ensure Flattened:")
-    print(predictions)
     labels = _ensure_flattened(labels)
-    # TODO: add accuracy/rmse for debugging
     # level_of_measurement is:
     # classification: nominal
     # regression: interval
