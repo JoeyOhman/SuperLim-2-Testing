@@ -8,8 +8,8 @@ if [ "$DEBUG" == 0 ]; then
   export WANDB_PROJECT=SuperLim2023
   api_key=$(cat api_wandb_key.txt)
   export WANDB_API_KEY=${api_key}
-  # export CUDA_VISIBLE_DEVICES="4,5,6,7"
-  export CUDA_VISIBLE_DEVICES="5,6,7"
+  export CUDA_VISIBLE_DEVICES="4,5,6,7"
+  # export CUDA_VISIBLE_DEVICES="5,6,7"
 else
   export WANDB_MODE=offline
   export WANDB_DISABLED=true
@@ -29,13 +29,14 @@ export PYTHONPATH="${pwd}:$PYTHONPATH"
 mkdir -p logs
 
 # declare -a models=("KB/bert-base-swedish-cased")
-declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m")
+# declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m")
 # declare -a models=("AI-Sweden-Models/gpt-sw3-126m")
+declare -a models=("KBLab/megatron-bert-large-swedish-cased-165k")
 # declare -a models=("gpt2")
 # declare -a models=("gpt2-medium")
 # declare -a tasks=("ABSAbank-Imm" "DaLAJ" "SweFAQ" "SweParaphrase")
-declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC")
-# declare -a tasks=("SweParaphrase")
+# declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC")
+declare -a tasks=("SweParaphrase")
 # declare -a tasks=("SweWiC")
 # declare -a tasks=("ABSAbank-Imm")
 # declare -a tasks=("Reviews")
