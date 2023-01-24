@@ -67,9 +67,13 @@ def _compute_metrics_f1(preds_labels_tuple):
 
 def _compute_metrics_krippendorff(preds_labels_tuple, level_of_measurement):
     predictions, labels = preds_labels_tuple
-    if np.ndim(predictions) > 1:
+    if np.ndim(predictions) > 1 and level_of_measurement != "interval":
         predictions = np.argmax(predictions, axis=1)
+    print("Predictions original:")
+    print(predictions)
     predictions = _ensure_flattened(predictions)
+    print("Ensure Flattened:")
+    print(predictions)
     labels = _ensure_flattened(labels)
     # TODO: add accuracy/rmse for debugging
     # level_of_measurement is:
@@ -106,16 +110,20 @@ metric_to_compute_fun = {
 }
 
 if __name__ == '__main__':
-    # preds = [2.3, 3., 5., 4.]
-    preds = [[2.3], [3.], [5.], [4.]]
+    preds = [2.3, 3., 5., 4.]
+    # preds = [[2.3], [3.], [5.], [4.]]
     # labels = np.array([3, 2, 6, 4.4])
     labels = [3, 2, 6, 4.4]
     # {'rmse': 0.8139410298049854, 'spearmanr': 0.8999999999999999}
     # res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
     # res = _compute_metrics_rmse_and_normalized_spearmanr((preds, labels))
     # {'krippendorff': 0.8268135561572215}
-    preds = [1, 2, 3, 4]
-    labels = [1, 2, 3, 5]
-    # res = _compute_metrics_krippendorff_regression((preds, labels))
-    res = _compute_metrics_krippendorff_classification((preds, labels))
-    print(res)
+    # preds = [1, 2, 3, 4]
+    # labels = [1, 2, 3, 5]
+    preds_wrapped = [[p] for p in preds]
+    res = _compute_metrics_krippendorff_regression((preds, labels))
+    print("Res:", res)
+    res_wrapped = _compute_metrics_krippendorff_regression((preds_wrapped, labels))
+    print("Res_wrapped:", res_wrapped)
+    # res = _compute_metrics_krippendorff_classification((preds, labels))
+    # print(res)
