@@ -201,7 +201,8 @@ class ExperimentBert(Experiment, ABC):
         def _model_init(trial=None):
             model = AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
                                                                        ignore_mismatched_sizes=True)
-            model.resize_token_embeddings(len(self.tokenizer))
+            if "gpt" in self.model_name:
+                model.resize_token_embeddings(len(self.tokenizer))
             return model
 
         trainer = CustomTrainer.init_trainer(self.training_args, None, tokenizer, train_ds, val_ds,
