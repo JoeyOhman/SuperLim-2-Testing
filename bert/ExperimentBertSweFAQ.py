@@ -59,8 +59,8 @@ class ExperimentBertSweFAQ(ExperimentBert):
             predictions.append(prediction)
             labels.append(label)
 
-        acc = _compute_metrics_accuracy((predictions, labels))
-        return acc
+        metric_dict = self._compute_metrics((predictions, labels))
+        return metric_dict
 
     # Override entire _evaluate in order to do cross encoder
     def _evaluate(self, trainer, val_ds, test_ds):
@@ -78,7 +78,7 @@ class ExperimentBertSweFAQ(ExperimentBert):
         test_metric = self._predict_dataset_cross(self.tokenizer, model, test_ds)
 
         # Pack results
-        assert self.metric == "accuracy"
+        # assert self.metric == "accuracy"
         metric_dict = {
             "eval": val_metric[self.metric],
             "test": test_metric[self.metric],
