@@ -1,3 +1,5 @@
+import random
+
 import evaluate
 import krippendorff
 import numpy as np
@@ -115,10 +117,13 @@ if __name__ == '__main__':
     # {'krippendorff': 0.8268135561572215}
     # preds = [1, 2, 3, 4]
     # labels = [1, 2, 3, 5]
-    preds_wrapped = [[p] for p in preds]
+    # preds_wrapped = [[p] for p in preds]
+    preds = [random.random() for _ in range(500)]
+    labels = [random.random() for _ in range(500)]
+    print(len(preds))
     res = _compute_metrics_krippendorff_regression((preds, labels))
     print("Res:", res)
-    res_wrapped = _compute_metrics_krippendorff_regression((preds_wrapped, labels))
-    print("Res_wrapped:", res_wrapped)
+    # res_wrapped = _compute_metrics_krippendorff_regression((preds_wrapped, labels))
+    # print("Res_wrapped:", res_wrapped)
     # res = _compute_metrics_krippendorff_classification((preds, labels))
     # print(res)

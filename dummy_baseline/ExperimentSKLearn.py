@@ -119,10 +119,11 @@ class ExperimentSKLearn(Experiment):
         elif self.task_name == "ABSAbank-Imm":
             return dataset_split["text"], dataset_split["labels"]
         elif self.task_name == "SweFAQ":
-            sep = " [SEP] "
             return [s1 + sep + s2 for s1, s2 in zip(dataset_split["question"], dataset_split["answer"])], dataset_split["labels"]
         elif self.task_name == "SweParaphrase":
             return [s1 + sep + s2 for s1, s2 in zip(dataset_split["Sentence 1"], dataset_split["Sentence 2"])], dataset_split["labels"]
+        elif self.task_name == "SweWiC":
+            return [s1 + sep + s2 + sep + w1 + sep + w2 for s1, s2, w1, w2 in zip(dataset_split["sentence1"], dataset_split["sentence2"], dataset_split["word1"], dataset_split["word2"])], dataset_split["labels"]
         else:
             print(f"Task={self.task_name} reformatting function for raw text not implemented")
             exit()
