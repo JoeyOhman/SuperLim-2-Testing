@@ -3,6 +3,7 @@ from typing import Dict
 from sklearn.dummy import DummyRegressor, DummyClassifier
 
 from Experiment import Experiment
+from dataset_loaders.dataset_loader import load_dataset_by_task, reformat_eval_set_swefaq
 
 
 class ExperimentDummy(Experiment):
@@ -54,6 +55,13 @@ class ExperimentDummy(Experiment):
         train_labels = train_ds["labels"]
         dev_labels = dev_ds["labels"]
         test_labels = test_ds["labels"]
+
+        if self.task_name == "SweFAQ":
+            _, val_ds_raw, test_ds_raw = load_dataset_by_task(self.task_name, self.data_fraction, reformat=False)
+            val_ds = reformat_eval_set_swefaq(val_ds_raw)
+            test_ds = reformat_eval_set_swefaq(test_ds_raw)
+            dev_labels = val_ds["labels"]
+            test_labels = test_ds["labels"]
 
         if self.is_regression:
             model = self._train_regression(train_labels)

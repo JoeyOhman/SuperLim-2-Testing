@@ -22,6 +22,7 @@ TASK_NAMES = [
 
 TASK_NAME_MAP = {
     "ABSAbank-Imm": "ABSA",
+    "SweFAQ": "Swedish FAQ"
 }
 
 MODEL_SIZES = load_model_sizes()

@@ -5,8 +5,8 @@ from utils import set_seed
 
 def main():
     # tasks = ["SweParaphrase", "SweFAQ", "DaLAJ", "ABSAbank-Imm"]
-    # tasks = ["SweParaphrase", "ABSAbank-Imm", "SweWiC"]
-    tasks = ["SweParaphrase"]
+    tasks = ["SweParaphrase", "ABSAbank-Imm", "SweWiC", "SweFAQ"]
+    # tasks = ["SweFAQ"]
     for task in tasks:
         print(task)
         print("Dummies")

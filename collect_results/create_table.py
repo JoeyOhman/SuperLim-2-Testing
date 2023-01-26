@@ -12,7 +12,9 @@ def create_row(model_dict, task_triples):
         task_dict = model_dict["tasks"][task]
         row.append(task_dict["test" if TEST_SCORES else "dev"])
 
-    agg_column = sum([col if task_triples[idx][-1] == "max" else -col for idx, col in enumerate(row[1:])])
+    scores = [col if task_triples[idx][-1] == "max" else -col for idx, col in enumerate(row[1:])]
+    scores = [-100 if score is None else score for score in scores]
+    agg_column = sum(scores)
     row.append(agg_column)
     return row
 
