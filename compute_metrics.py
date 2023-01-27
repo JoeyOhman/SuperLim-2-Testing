@@ -76,6 +76,8 @@ def _compute_metrics_krippendorff(preds_labels_tuple, level_of_measurement):
     # level_of_measurement is:
     # classification: nominal
     # regression: interval
+    # arr = np.array([predictions, labels])
+    # alpha = krippendorff.alpha(reliability_data=arr, level_of_measurement=level_of_measurement)
     alpha = krippendorff.alpha(reliability_data=[predictions, labels], level_of_measurement=level_of_measurement)
     metric_name = f"krippendorff_{level_of_measurement}"
     return {metric_name: alpha}
@@ -118,10 +120,12 @@ if __name__ == '__main__':
     # preds = [1, 2, 3, 4]
     # labels = [1, 2, 3, 5]
     # preds_wrapped = [[p] for p in preds]
-    preds = [random.random() for _ in range(500)]
-    labels = [random.random() for _ in range(500)]
+    # preds = [random.random() for _ in range(500)]
+    # labels = [random.random() for _ in range(500)]
     print(len(preds))
-    res = _compute_metrics_krippendorff_regression((preds, labels))
+    res = _compute_metrics_krippendorff_regression([preds, labels])
+    # {'krippendorff_interval': -0.15348706936793954, 'rmse': 0.8139410298049854}
+    # {'krippendorff_interval': 0.8268135561572215, 'rmse': 0.8139410298049854}
     print("Res:", res)
     # res_wrapped = _compute_metrics_krippendorff_regression((preds_wrapped, labels))
     # print("Res_wrapped:", res_wrapped)

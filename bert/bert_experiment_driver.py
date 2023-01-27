@@ -8,6 +8,7 @@ from bert.ExperimentBertReviews import ExperimentBertReviews
 from bert.ExperimentBertSweFAQ import ExperimentBertSweFAQ
 from bert.ExperimentBertSweParaphrase import ExperimentBertSweParaphrase
 from bert.ExperimentBertSweWiC import ExperimentBertSweWiC
+from bert.ExperimentBertSweWinograd import ExperimentBertSweWinograd
 from utils import set_seed
 
 task_to_bert_class = {
@@ -16,6 +17,7 @@ task_to_bert_class = {
     "SweFAQ": ExperimentBertSweFAQ,
     "SweParaphrase": ExperimentBertSweParaphrase,
     "SweWiC": ExperimentBertSweWiC,
+    "SweWinograd": ExperimentBertSweWinograd,
     "Reviews": ExperimentBertReviews,
 }
 
@@ -28,9 +30,10 @@ ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium"]
 
 def main(args):
     data_fraction = 1.0
+    # data_fraction = 0.1
     # data_fraction = 0.25
     quick_run = False
-    hps = True
+    hps = False
 
     if args.model_name in ACC_STEPS_8:
         accumulation_steps = 8

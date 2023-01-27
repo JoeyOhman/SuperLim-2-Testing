@@ -57,6 +57,7 @@ class ExperimentBert(Experiment, ABC):
         self.training_args = training_arguments
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         # self.max_input_length = max_input_length
+        self.use_resize = True
         self.hps = hps
         self.quick_run = quick_run
         self.config = self._load_config()
@@ -64,10 +65,10 @@ class ExperimentBert(Experiment, ABC):
         self.tokenizer = self._load_tokenizer()
 
         # Avoid technical issues by not going beyond 1024
-        self.max_seq_len = min(self.max_seq_len, 1024)
+        # self.max_seq_len = min(self.max_seq_len, 1024)
         # self.max_seq_len = min(self.max_seq_len, 512)
         # self.max_seq_len = min(self.max_seq_len, 256)
-        # self.max_seq_len = min(self.max_seq_len, 128)
+        self.max_seq_len = min(self.max_seq_len, 128)
         # self.max_seq_len = min(self.max_seq_len, 80)
         # self.max_seq_len = min(self.max_seq_len, 64)
         if quick_run:
@@ -174,7 +175,8 @@ class ExperimentBert(Experiment, ABC):
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if "gpt" in self.model_name:
             tokenizer.padding_side = "left"
-            tokenizer.add_tokens(['$'], special_tokens=True)
+            if self.use_resize:
+                tokenizer.add_tokens(['$'], special_tokens=True)
             # tokenizer.add_tokens(['$', '[CLS]'], special_tokens=True)
         if "gpt2" in self.model_name or tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
@@ -192,7 +194,7 @@ class ExperimentBert(Experiment, ABC):
         model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config,
                                                                    ignore_mismatched_sizes=True)
 
-        if "gpt" in self.model_name:
+        if "gpt" in self.model_name and self.use_resize:
             model.resize_token_embeddings(len(self.tokenizer))
         model.to(get_device())
         return model
@@ -201,7 +203,7 @@ class ExperimentBert(Experiment, ABC):
         def _model_init(trial=None):
             model = AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
                                                                        ignore_mismatched_sizes=True)
-            if "gpt" in self.model_name:
+            if "gpt" in self.model_name and self.use_resize:
                 model.resize_token_embeddings(len(self.tokenizer))
             return model
 

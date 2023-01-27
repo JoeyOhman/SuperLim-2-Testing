@@ -134,6 +134,32 @@ def reformat_dataset_SweWiC(dataset, split_name):
     return Dataset.from_dict(new_dataset_dict)
 
 
+def reformat_dataset_SweWinograd(dataset, split_name):
+    new_dataset_dict = {
+        "text": [],
+        "pronoun": [],
+        "candidate": [],
+        "labels": []
+    }
+
+    for sample in dataset:
+        new_dataset_dict["text"].append(sample["text"])
+        new_dataset_dict["pronoun"].append(sample["pronoun"]["text"])
+        new_dataset_dict["candidate"].append(sample["candidate_antecedent"]["text"])
+
+        if sample["label"] == "coreferring":
+            label = 1
+        elif sample["label"] == "not_coreferring":
+            label = 0
+        else:
+            print("label incorrect in data-file:", sample["label"])
+            assert False
+
+        new_dataset_dict["labels"].append(label)
+
+    return Dataset.from_dict(new_dataset_dict)
+
+
 def reformat_dataset_Reviews(dataset, split_name):
     dataset = dataset.rename_column("label", "labels")
     return dataset
@@ -145,6 +171,7 @@ TASK_TO_REFORMAT_FUN = {
     "DaLAJ": reformat_dataset_DaLAJ,
     "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
     "SweWiC": reformat_dataset_SweWiC,
+    "SweWinograd": reformat_dataset_SweWinograd,
     "Reviews": reformat_dataset_Reviews,
 }
 
