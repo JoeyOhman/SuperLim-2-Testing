@@ -33,7 +33,7 @@ def main(args):
     # data_fraction = 0.1
     # data_fraction = 0.25
     quick_run = False
-    hps = False
+    hps = True
 
     if args.model_name in ACC_STEPS_8:
         accumulation_steps = 8
