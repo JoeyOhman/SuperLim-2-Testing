@@ -19,7 +19,8 @@ MODELS = [
     "gpt2",
     "gpt2-medium",
     "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
-    "microsoft/mdeberta-v3-base"
+    "microsoft/mdeberta-v3-base",
+    "NbAiLab/nb-bert-base"
 ]
 
 

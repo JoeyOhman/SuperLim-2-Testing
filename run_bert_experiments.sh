@@ -39,10 +39,10 @@ declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedis
 # declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC")
 # declare -a tasks=("SweFAQ")
 # declare -a tasks=("SweParaphrase")
-declare -a tasks=("SweWinograd")
+# declare -a tasks=("SweWinograd")
 # declare -a tasks=("SweWiC")
 # declare -a tasks=("ABSAbank-Imm")
-# declare -a tasks=("DaLAJ")
+declare -a tasks=("DaLAJ")
 # declare -a tasks=("Reviews")
 
 # Loop through models

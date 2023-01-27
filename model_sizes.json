@@ -11,5 +11,6 @@
 	"gpt2": 124439808,
 	"gpt2-medium": 354823168,
 	"sentence-transformers/paraphrase-multilingual-mpnet-base-v2": 278043648,
-	"microsoft/mdeberta-v3-base": 278218752
+	"microsoft/mdeberta-v3-base": 278218752,
+	"NbAiLab/nb-bert-base": 177853440
 }

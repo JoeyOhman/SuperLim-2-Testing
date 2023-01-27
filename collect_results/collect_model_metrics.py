@@ -8,7 +8,8 @@ from store_model_sizes import load_model_sizes
 TASK_NAMES = [
     "DaLAJ",
     "Swedish FAQ",
-    "SweFraCas",
+    # "SweFraCas",
+    "SweMNLI",
     "SweWinograd",
     "SweWinogender",
     "SweDiagnostics",

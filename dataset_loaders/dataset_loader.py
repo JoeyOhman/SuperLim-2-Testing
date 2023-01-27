@@ -79,11 +79,26 @@ def reformat_dataset_DaLAJ(dataset, split_name):
         "text": [],
         "labels": []
     }
+
+    # OLD
+    # for sample in dataset:
+    #     new_dataset_dict["text"].append(sample["original sentence"])
+    #     new_dataset_dict["labels"].append(0)
+    #     new_dataset_dict["text"].append(sample["corrected sentence"])
+    #     new_dataset_dict["labels"].append(1)
+
     for sample in dataset:
-        new_dataset_dict["text"].append(sample["original sentence"])
-        new_dataset_dict["labels"].append(0)
-        new_dataset_dict["text"].append(sample["corrected sentence"])
-        new_dataset_dict["labels"].append(1)
+        new_dataset_dict["text"].append(sample["sentence"])
+
+        if sample["label"] == "correct":
+            label = 1
+        elif sample["label"] == "incorrect":
+            label = 0
+        else:
+            print("Incorrect label in data file:", sample["label"])
+            assert False
+
+        new_dataset_dict["labels"].append(label)
 
     return Dataset.from_dict(new_dataset_dict)
 
@@ -152,7 +167,7 @@ def reformat_dataset_SweWinograd(dataset, split_name):
         elif sample["label"] == "not_coreferring":
             label = 0
         else:
-            print("label incorrect in data-file:", sample["label"])
+            print("label incorrect in data file:", sample["label"])
             assert False
 
         new_dataset_dict["labels"].append(label)
