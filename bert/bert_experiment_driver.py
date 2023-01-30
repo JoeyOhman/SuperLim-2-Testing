@@ -6,6 +6,7 @@ from bert.ExperimentBertABSAbankImm import ExperimentBertABSAbankImm
 from bert.ExperimentBertDaLAJ import ExperimentBertDaLAJ
 from bert.ExperimentBertReviews import ExperimentBertReviews
 from bert.ExperimentBertSweFAQ import ExperimentBertSweFAQ
+from bert.ExperimentBertSweMNLI import ExperimentBertSweMNLI
 from bert.ExperimentBertSweParaphrase import ExperimentBertSweParaphrase
 from bert.ExperimentBertSweWiC import ExperimentBertSweWiC
 from bert.ExperimentBertSweWinograd import ExperimentBertSweWinograd
@@ -18,6 +19,7 @@ task_to_bert_class = {
     "SweParaphrase": ExperimentBertSweParaphrase,
     "SweWiC": ExperimentBertSweWiC,
     "SweWinograd": ExperimentBertSweWinograd,
+    "SweMNLI": ExperimentBertSweMNLI,
     "Reviews": ExperimentBertReviews,
 }
 
@@ -30,7 +32,7 @@ ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium"]
 
 def main(args):
     data_fraction = 1.0
-    # data_fraction = 0.1
+    # data_fraction = 0.01
     # data_fraction = 0.25
     quick_run = False
     hps = True

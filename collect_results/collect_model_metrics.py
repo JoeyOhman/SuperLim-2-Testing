@@ -86,11 +86,17 @@ def get_init_model_dict(model, tasks):
 
 
 def add_task_to_model_dict(model_dicts, model, task, metric_name, dev, test):
-    model_dicts[model]["tasks"][task] = {
-        # "metric": metric_name,
-        "dev": dev,
-        "test": test
-    }
+    if task == "SweWinogender":
+        model_dicts[model]["tasks"][task] = {
+            "alpha": dev,
+            "parity": test
+        }
+    else:
+        model_dicts[model]["tasks"][task] = {
+            # "metric": metric_name,
+            "dev": dev,
+            "test": test
+        }
 
 
 def create_and_save_model_dicts(metric_dicts, tasks):

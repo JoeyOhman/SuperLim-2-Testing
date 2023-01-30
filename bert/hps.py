@@ -101,9 +101,12 @@ def save_best_model(best_run: BestRun, run_name: str, model_dir: str, metric_dir
 """
 
 
-def tune_config_ray(accumulation_steps, trial):
+def tune_config_ray(accumulation_steps, task_name, trial):
+    lrs = [1e-5, 2e-5, 3e-5, 4e-5]
+    if task_name == "SweMNLI":
+        lrs = [1e-5, 4e-5]
     tune_config = {
-        "learning_rate": tune.grid_search([1e-5, 2e-5, 3e-5, 4e-5]),
+        "learning_rate": tune.grid_search(lrs),
         "per_device_train_batch_size": tune.grid_search([
             int(16 / accumulation_steps),
             int(32 / accumulation_steps)
@@ -112,7 +115,7 @@ def tune_config_ray(accumulation_steps, trial):
     return tune_config
 
 
-def tune_config_ray_quick(accumulation_steps, trial):
+def tune_config_ray_quick(accumulation_steps, task_name, trial):
     tune_config = {
         "learning_rate": tune.grid_search([1e-5, 3e-5]),
         "per_device_train_batch_size": tune.grid_search([int(16 / accumulation_steps)])
@@ -130,7 +133,7 @@ def hp_tune(trainer: Trainer, model_name_or_path: str, task_name: str, accumulat
     # experiment_metric_path = get_experiment_metrics_path(task_name, model_name_or_path)
 
     tune_config = tune_config_ray_quick if quick_run else tune_config_ray
-    tune_config = partial(tune_config, accumulation_steps)
+    tune_config = partial(tune_config, accumulation_steps, task_name)
 
     run_name = task_name + "_" + model_name_or_path.replace("/", "-")
     metrics_to_report = ["epoch", "eval_loss"]

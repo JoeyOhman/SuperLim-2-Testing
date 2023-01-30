@@ -24,7 +24,7 @@ class ExperimentBert(Experiment, ABC):
         super().__init__(task_name, model_name, data_fraction)
 
         self.num_train_epochs = 10
-        # self.num_train_epochs = 3
+        # self.num_train_epochs = 1
         self.warmup_ratio = 0.06
         self.weight_decay = 0.0 if "gpt" in self.model_name else 0.1  # RoBERTa GLUE = 0.1, let GPT use HF default = 0.0
         self.fp16 = torch.cuda.is_available()
@@ -266,14 +266,17 @@ class ExperimentBert(Experiment, ABC):
         else:
             trainer, hp_dict = self._run_no_hps(self.config, self.tokenizer, train_ds, val_ds)
 
-        metric_dict = self._evaluate(trainer, val_ds, test_ds)
-
         hp_dict["batch_size"] = hp_dict["per_device_train_batch_size"] * self.accumulation_steps
         del hp_dict["per_device_train_batch_size"]
         hp_dict["num_train_epochs"] = self.num_train_epochs
         hp_dict["warmup_ratio"] = self.warmup_ratio
         hp_dict["weight_decay"] = self.weight_decay
         hp_dict["fp16"] = self.fp16
+
+        # Let ExperimentBertSweMNLI use this
+        self.hp_dict = hp_dict
+
+        metric_dict = self._evaluate(trainer, val_ds, test_ds)
 
         metric_dict["hyperparameters"] = hp_dict
 

@@ -1,3 +1,4 @@
+import numpy as np
 from tabulate import tabulate
 
 from collect_results.collect_model_metrics import create_and_load_model_dicts
@@ -14,7 +15,8 @@ def create_row(model_dict, task_triples):
 
     scores = [col if task_triples[idx][-1] == "max" else -col for idx, col in enumerate(row[1:])]
     scores = [-100 if score is None else score for score in scores]
-    agg_column = sum(scores)
+    # agg_column = sum(scores)
+    agg_column = np.mean(scores)
     row.append(agg_column)
     return row
 
@@ -25,7 +27,7 @@ def create_table(task_triples, rows):
         # print(task, metric_name, direction)
         header = task + f" ({metric_name.replace('accuracy', 'acc')}) " + ("↑" if direction == "max" else "↓")
         headers.append(header)
-    headers.append("WeightSum ↑")
+    headers.append("Avg ↑")
 
     table = tabulate(rows, headers=headers, tablefmt="github")
     print(table)

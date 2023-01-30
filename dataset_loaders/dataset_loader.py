@@ -175,6 +175,32 @@ def reformat_dataset_SweWinograd(dataset, split_name):
     return Dataset.from_dict(new_dataset_dict)
 
 
+def reformat_dataset_SweMNLI(dataset, split_name):
+    new_dataset_dict = {
+        "sentence1": [],
+        "sentence2": [],
+        "labels": []
+    }
+
+    for sample in dataset:
+        new_dataset_dict["sentence1"].append(sample["premise"])
+        new_dataset_dict["sentence2"].append(sample["hypothesis"])
+
+        if sample["label"] == "entailment":
+            label = 0
+        elif sample["label"] == "contradiction":
+            label = 1
+        elif sample["label"] == "neutral":
+            label = 2
+        else:
+            print(f"label incorrect in data file {split_name}:", sample["label"])
+            assert False
+
+        new_dataset_dict["labels"].append(label)
+
+    return Dataset.from_dict(new_dataset_dict)
+
+
 def reformat_dataset_Reviews(dataset, split_name):
     dataset = dataset.rename_column("label", "labels")
     return dataset
@@ -187,6 +213,7 @@ TASK_TO_REFORMAT_FUN = {
     "ABSAbank-Imm": reformat_dataset_ABSAbankImm,
     "SweWiC": reformat_dataset_SweWiC,
     "SweWinograd": reformat_dataset_SweWinograd,
+    "SweMNLI": reformat_dataset_SweMNLI,
     "Reviews": reformat_dataset_Reviews,
 }
 
@@ -245,16 +272,61 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bo
     # dev_ds = dev_ds.select(range(0, break_point_idx))
 
     assert 0.0 < data_fraction <= 1.0, "data_fraction must be in range(0, 1]"
-    if data_fraction < 1.0:
+    if data_fraction < 1.0:  # For debugging purposes!
         train_ds = train_ds.select(range(int(len(train_ds) * data_fraction)))
         dev_ds = dev_ds.select(range(int(len(dev_ds) * data_fraction)))
         test_ds = test_ds.select(range(int(len(test_ds) * data_fraction)))
 
+    if task_name == "SweMNLI":  # For reducing immense training set
+        df = 1.0
+        if df < 1.0:
+            train_ds = train_ds.shuffle(seed=42)
+            train_ds = train_ds.select(range(int(len(train_ds) * df)))
+
     return train_ds, dev_ds, test_ds
 
 
+def load_winogender():
+    dataset_path = DATASET_PATH_TEMPLATE.format(task="SweWinogender")
+    extension = [pt for pt in Path(dataset_path).rglob("test.*")][0].name.split(".")[-1]
+    is_json = "json" in extension
+    data_files = {"test": os.path.join(dataset_path, f"test.{extension}")}
+    if is_json:
+        dataset = load_dataset('json', data_files=data_files)
+    else:
+        dataset = load_dataset('csv', data_files=data_files, delimiter="\t", quoting=csv.QUOTE_NONE)
+
+    new_dataset_dict = {
+        "sentence1": [],
+        "sentence2": [],
+        "labels": [],
+        "tuple_id": []
+    }
+
+    test_ds = dataset["test"]
+    for sample in test_ds:
+        new_dataset_dict["sentence1"].append(sample["premise"])
+        new_dataset_dict["sentence2"].append(sample["hypothesis"])
+
+        if sample["label"] == "entailment":
+            label = 0
+        elif sample["label"] == "contradiction":
+            label = 1
+        elif sample["label"] == "neutral":
+            label = 2
+        else:
+            print("label incorrect in data file:", sample["label"])
+            assert False
+
+        new_dataset_dict["labels"].append(label)
+        new_dataset_dict["tuple_id"].append(sample["meta"]["tuple_id"])
+
+    return Dataset.from_dict(new_dataset_dict)
+
+
 if __name__ == '__main__':
-    dataset_main = load_dataset_by_task("SweWiC", 1.0)
+    # dataset_main = load_dataset_by_task("SweWiC", 1.0)
+    dataset_main = load_winogender()
     print(dataset_main)
     # ds = load_dataset("super_glue", "boolq")
     # print(ds)

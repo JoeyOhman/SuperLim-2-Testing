@@ -15,6 +15,7 @@ task_to_info_dict = {
     "SweFAQ": {"num_classes": 2, "metric": "krippendorff_nominal", "direction": "max", "is_regression": False},
     "SweWiC": {"num_classes": 2, "metric": "krippendorff_nominal", "direction": "max", "is_regression": False},
     "SweWinograd": {"num_classes": 2, "metric": "krippendorff_nominal", "direction": "max", "is_regression": False},
+    "SweMNLI": {"num_classes": 3, "metric": "krippendorff_nominal", "direction": "max", "is_regression": False},
     # "SweParaphrase": {"num_classes": 1, "metric": "rmse", "direction": "min", "is_regression": True},
     # "SweParaphrase": {"num_classes": 1, "metric": "spearmanr", "direction": "max"},
     # "DaLAJ": {"num_classes": 2, "metric": "accuracy", "direction": "max", "is_regression": False},
