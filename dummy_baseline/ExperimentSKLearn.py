@@ -162,6 +162,8 @@ class ExperimentSKLearn(Experiment):
             return [s1 + self.sep + s2 + self.sep + w1 + self.sep + w2 for s1, s2, w1, w2 in zip(dataset_split["sentence1"], dataset_split["sentence2"], dataset_split["word1"], dataset_split["word2"])], dataset_split["labels"]
         elif self.task_name == "SweWinograd":
             return [t + self.sep + p + self.sep + c for t, p, c in zip(dataset_split["text"], dataset_split["pronoun"], dataset_split["candidate"])], dataset_split["labels"]
+        elif self.task_name == "SweMNLI":
+            return [s1 + self.sep + s2 for s1, s2 in zip(dataset_split["sentence1"], dataset_split["sentence2"])], dataset_split["labels"]
         else:
             print(f"Task={self.task_name} reformatting function for raw text not implemented")
             exit()

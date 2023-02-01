@@ -63,6 +63,19 @@ def get_init_model_dict(model, tasks):
     if "gpt" in model:
         model_type = "Decoder"
 
+
+    def init_task_dict(task):
+        if task == "SweWinogender":
+            return {
+                "dev": None,
+                "test": {"alpha": None, "parity": None}
+            }
+        else:
+            return {
+                "dev": None,
+                "test": None
+            }
+
     return {
         "repo_link": "https://github.com/JoeyOhman/SuperLim-2-Testing",
         "model": {
@@ -72,14 +85,7 @@ def get_init_model_dict(model, tasks):
             "data_size": None
         },
         "tasks": {
-            TASK_NAME_MAP.get(task, task): {
-                # "metric": metric_name,
-                # "dev": 100 if direction == "min" else -100,
-                # "test": 100 if direction == "min" else -100
-                "dev": None,
-                "test": None
-            # } for task, metric_name, direction in tasks
-            } for task in TASK_NAMES
+            TASK_NAME_MAP.get(task, task): init_task_dict(task) for task in TASK_NAMES
         },
         "model_card": ""
     }
@@ -87,7 +93,7 @@ def get_init_model_dict(model, tasks):
 
 def add_task_to_model_dict(model_dicts, model, task, metric_name, dev, test):
     if task == "SweWinogender":
-        model_dicts[model]["tasks"][task] = {
+        model_dicts[model]["tasks"][task]["test"] = {
             "alpha": dev,
             "parity": test
         }
@@ -107,8 +113,12 @@ def create_and_save_model_dicts(metric_dicts, tasks):
         task = TASK_NAME_MAP.get(task, task)
         model = metric_dict["model"]
         metric_name = metric_dict["metric"]
-        dev = metric_dict["eval"]
-        test = metric_dict["test"]
+        if task == "SweWinogender":
+            dev = metric_dict["krippendorff_nominal"]
+            test = metric_dict["parity"]
+        else:
+            dev = metric_dict["eval"]
+            test = metric_dict["test"]
 
         # Initialize and fill model dict
         if model not in model_dicts:

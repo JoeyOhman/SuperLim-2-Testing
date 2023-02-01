@@ -10,6 +10,8 @@ def create_row(model_dict, task_triples):
     model_name = model_dict["model"]["model_name"]
     row = [model_name]
     for task, _, _ in task_triples:
+        # if task == "SweWinogender":
+        #     continue
         task_dict = model_dict["tasks"][task]
         row.append(task_dict["test" if TEST_SCORES else "dev"])
 
@@ -35,6 +37,7 @@ def create_table(task_triples, rows):
 
 def main():
     model_dicts, task_triples = create_and_load_model_dicts()
+    task_triples = [tt for tt in task_triples if tt[0] != "SweWinogender"]
     sorted_model_tuples = sorted([(k, v) for k, v in model_dicts.items()], key=lambda x: x[0])
     sorted_model_dicts = [model_dict for _, model_dict in sorted_model_tuples]
 
