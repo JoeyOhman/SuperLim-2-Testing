@@ -107,6 +107,7 @@ def add_task_to_model_dict(model_dicts, model, task, metric_name, dev, test):
 
 def create_and_save_model_dicts(metric_dicts, tasks):
     model_dicts = defaultdict(dict)
+    model_and_task_to_hps = defaultdict(dict)
     for metric_dict in metric_dicts:
         # Extract properties
         task = metric_dict["task"]
@@ -125,6 +126,9 @@ def create_and_save_model_dicts(metric_dicts, tasks):
             model_dicts[model] = get_init_model_dict(model, tasks)
         add_task_to_model_dict(model_dicts, model, task, metric_name, dev, test)
 
+        if "hyperparameters" in metric_dict:
+            model_and_task_to_hps[model][task] = metric_dict["hyperparameters"]
+
     # Write one json file per model
     deliverables_path = METRICS_PATH + "/model_deliverables"
     Path(deliverables_path).mkdir(parents=True, exist_ok=True)
@@ -132,14 +136,14 @@ def create_and_save_model_dicts(metric_dicts, tasks):
         with open(deliverables_path + "/" + model.replace("/", "-") + ".json", 'w') as f:
             json.dump(model_dict, f, ensure_ascii=False, indent="\t")
 
-    return model_dicts
+    return model_dicts, model_and_task_to_hps
 
 
 def create_and_load_model_dicts():
     metric_dicts = load_all_metric_dicts()
     task_triples = get_all_tasks(metric_dicts)
-    model_dicts = create_and_save_model_dicts(metric_dicts, task_triples)
-    return model_dicts, task_triples
+    model_dicts, model_and_task_to_hps = create_and_save_model_dicts(metric_dicts, task_triples)
+    return model_dicts, task_triples, model_and_task_to_hps
 
 
 if __name__ == '__main__':
