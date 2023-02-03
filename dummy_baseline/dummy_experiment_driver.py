@@ -4,9 +4,7 @@ from utils import set_seed
 
 
 def main():
-    # tasks = ["SweParaphrase", "SweFAQ", "DaLAJ", "ABSAbank-Imm"]
-    # tasks = ["SweParaphrase", "ABSAbank-Imm", "SweWiC", "SweFAQ", "SweWinograd", "DaLAJ"]
-    tasks = ["SweMNLI"]
+    tasks = ["SweParaphrase", "ABSAbank-Imm", "SweWiC", "SweFAQ", "SweWinograd", "DaLAJ", "SweMNLI"]
     for task in tasks:
         print(task)
         print("Dummies")

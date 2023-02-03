@@ -55,6 +55,8 @@ after the experiments are done. This is done automatically in the `BertExperimen
 
 ## Results
 
+All tasks are evaluated using the Krippendorff Alpha metric (nominal for classification, and interval for regression).
+
 ### Evaluation Results
 | Model                                        |       ABSA |      DaLAJ |     SweMNLI |   SweParaphrase |     SweWiC |   SweWinograd |   Swedish FAQ |      Avg ↑ |
 |----------------------------------------------|------------|------------|-------------|-----------------|------------|---------------|---------------|------------|
@@ -268,5 +270,17 @@ Traditional ML baselines take a random answer from the candidates that the model
 For these traditional ML baselines, only 5% (20,000 samples) of the training set is used for training. 
 This did not seem to have a noticable effect on the end performance, and the motivation for this was to reduce the training time.
 
+## Reproduce results
 
+```
+1. Download all data to data directory 
+2. Setup wandb key in api_wandb_key.txt
+3. Configure GPUs to use in run_bert_experiments.sh
+4. Specify models and tasks in run_bert_experiments.sh
+5. Specify accumulation sizes for models in bert/bert_experiment_driver.py to suit your available GPU memory.
+6. ./run_dummy_experiments.sh
+7. ./run_bert_experiments.sh (this includes gpt experiments if wanted)
+8. Run the collect_results/create_table.py script, it will collect results in results/experiments/metrics directory and create the results/experiments/metrics/model_deliverables directory with json files. 
+```
 
+This will fine-tune 672 models in total, if the 4 gpt-models are included.

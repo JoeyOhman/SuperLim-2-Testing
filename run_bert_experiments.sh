@@ -20,31 +20,12 @@ fi
 # /bin/hostname -s
 export PYTHONPATH="${pwd}:$PYTHONPATH"
 
-# These pip installs are setup required in the docker container, skip if debug (which is used locally)
-# if [ "$DEBUG" == 0 ]; then
-#   pip install evaluate
-#   pip install sentencepiece
-# fi
-
 mkdir -p logs
 
 # declare -a models=("KB/bert-base-swedish-cased")
 declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m")
-# declare -a models=("AI-Sweden-Models/gpt-sw3-126m")
-# declare -a models=("albert-base-v2")
-# declare -a models=("KBLab/megatron-bert-large-swedish-cased-165k")
-# declare -a models=("gpt2")
-# declare -a models=("gpt2-medium")
-# declare -a tasks=("ABSAbank-Imm" "DaLAJ" "SweFAQ" "SweParaphrase")
-# declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC")
-# declare -a tasks=("SweFAQ")
-# declare -a tasks=("SweParaphrase")
-# declare -a tasks=("SweWinograd")
-# declare -a tasks=("SweWiC")
-# declare -a tasks=("ABSAbank-Imm")
-# declare -a tasks=("DaLAJ")
-declare -a tasks=("SweMNLI")
-# declare -a tasks=("Reviews")
+declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC", "DaLAJ", "SweWinograd", "SweMNLI")
+# declare -a tasks=("SweMNLI")
 
 # Loop through models
 for model in "${models[@]}"
