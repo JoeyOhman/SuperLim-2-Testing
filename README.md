@@ -91,6 +91,19 @@ All tasks are evaluated using the Krippendorff Alpha metric (nominal for classif
 | Random                                       |  0.00783217 |  0.0168878 | -0.0906326   |     -0.00659552 | -0.00954447 |     0.0165235 |    -0.13896   | -0.0292127 |
 | MaxFreq/Avg                                  | -0.0517904  | -0.336213  | -0.534511    |     -0.00149617 | -0.332667   |    -0.177215  |    -0.30954   | -0.249062  |
 
+### SweWinogender Results
+
+| Model                                        |   SweWinogender (Parity) |   SweWinogender (Alpha) |
+|----------------------------------------------|--------------------------|-------------------------|
+| KBLab/megatron-bert-large-swedish-cased-165k |                 0.995192 |               -0.29472  |
+| xlm-roberta-base                             |                 0.995192 |               -0.298024 |
+| xlm-roberta-large                            |                 0.985577 |               -0.315893 |
+| KBLab/megatron-bert-base-swedish-cased-600k  |                 0.990385 |               -0.320952 |
+| KBLab/bert-base-swedish-cased-new            |                 1        |               -0.328369 |
+| AI-Nordics/bert-large-swedish-cased          |                 1        |               -0.332265 |
+| KB/bert-base-swedish-cased                   |                 1        |               -0.332265 |
+| NbAiLab/nb-bert-base                         |                 0.990385 |               -0.332306 |
+
 ### Best Hyperparameters
 
 The search space for all tasks and transformer models were the following:
