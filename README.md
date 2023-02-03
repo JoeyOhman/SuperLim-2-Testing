@@ -246,7 +246,6 @@ The following table shows the average standard deviation of the hyperparameter c
 The following table shows the average of the mean distances to the maximum achieved performance.
 I.e. for each task hyperparameter search, take the mean of the metric distances to the maximum hyperparameter configuration.
 
-**************************************************
 | Model                                        |   avg mean distance |
 |----------------------------------------------|---------------------|
 | KBLab/megatron-bert-large-swedish-cased-165k |           0.0242346 |
