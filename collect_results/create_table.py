@@ -5,8 +5,10 @@ from tabulate import tabulate
 
 from collect_results.collect_model_metrics import create_and_load_model_dicts
 
-TEST_SCORES = False
-INCLUDE_GPT = False
+TEST_SCORES = True
+INCLUDE_GPT = True
+
+DO_ROUNDING = True
 
 
 def avg_distance_from_max(metrics):
@@ -16,6 +18,14 @@ def avg_distance_from_max(metrics):
     if sum(distances) == 0:
         return 0
     return np.mean(distances)
+
+
+def get_rounded_matrix(rows, num_decimals=2):
+    rows_rounded = []
+    for row in rows:
+        row_rounded = [round(el, num_decimals) if isinstance(el, float) else el for el in row]
+        rows_rounded.append(row_rounded)
+    return rows_rounded
 
 
 def create_row(model_dict, task_triples):
@@ -53,6 +63,9 @@ def create_table(task_triples, rows):
         else:
             rows_new.append(r)
 
+    if DO_ROUNDING:
+        rows_new = get_rounded_matrix(rows_new)
+
     table = tabulate(rows_new, headers=headers, tablefmt="github")
     print(table)
 
@@ -72,6 +85,9 @@ def create_table_winogender(task_triple, rows):
             continue
         else:
             rows_new.append(r)
+
+    if DO_ROUNDING:
+        rows_new = get_rounded_matrix(rows_new)
 
     table = tabulate(rows_new, headers=headers, tablefmt="github")
     print(table)
