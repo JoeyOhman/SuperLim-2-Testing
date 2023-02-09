@@ -28,6 +28,41 @@ TASK_NAME_MAP = {
 
 MODEL_SIZES = load_model_sizes()
 
+DATA_SIZES = {
+    "KB/bert-base-swedish-cased": "20GB",
+    "KBLab/megatron-bert-base-swedish-cased-600k": "70GB",
+    "KBLab/bert-base-swedish-cased-new": "70GB",
+    "xlm-roberta-base": "2500GB",
+    "AI-Nordics/bert-large-swedish-cased": "85GB",
+    "KBLab/megatron-bert-large-swedish-cased-165k": "70GB",
+    "xlm-roberta-large": "2500GB",
+    "NbAiLab/nb-bert-base": "109GB"
+}
+
+
+def load_model_cards():
+    model_cards_path = "/home/joey/code/ai/SuperLim-2-Testing/data/ModelCards"
+    model_cards_dict = {}
+    for path in Path(model_cards_path).rglob('*.txt'):
+        with open(path, 'r') as f:
+            model_card = f.read()
+
+        if "AI-Nordics-bert-large-swedish-cased" in path.name:
+            model_name = "AI-Nordics/bert-large-swedish-cased"
+        else:
+            model_name = path.name.split("/")[-1].split(".txt")[0]
+            if "xlm-roberta" not in model_name:
+                model_name = model_name.replace("-", "/", 1)
+
+        model_cards_dict[model_name] = model_card
+
+    print(model_cards_dict)
+
+    return model_cards_dict
+
+
+MODEL_CARDS = load_model_cards()
+
 
 def load_all_metric_dicts():
     metric_dicts = []
@@ -56,6 +91,44 @@ def get_all_tasks(metric_dicts):
     return triples
 
 
+def get_model_card(model_name):
+    model_card = MODEL_CARDS.get(model_name, None)
+    if model_card is not None:
+        return model_card
+
+    if model_name == "Decision Tree":
+        model_card = "The model was trained on with the vectorizer performing best on the dev-set of the following:\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html"
+    elif model_name == "SVM":
+        model_card = "The model was trained on with the vectorizer performing best on the dev-set of the following:\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html"
+    elif model_name == "Random Forest":
+        model_card = "The model was trained on with the vectorizer performing best on the dev-set of the following:\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"
+    elif model_name == "MaxFreq/Avg":
+        model_card = "This model uses Max Frequency for classification, and the mean strategy for regression\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html\n" \
+                     "https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html"
+    elif model_name == "Random":
+        model_card = "This model predicts a random output in the possible range observed in the training set."
+    else:
+        if "gpt" in model_name:
+            return None
+        print(model_name)
+        assert False
+
+    return model_card
+
+
 def get_init_model_dict(model, tasks):
     model_type = "Non-transformer"
     if "bert" in model:
@@ -82,12 +155,13 @@ def get_init_model_dict(model, tasks):
             "model_name": model,
             "model_type": model_type,
             "number_params": MODEL_SIZES.get(model, None),
-            "data_size": None
+            "data_size": DATA_SIZES.get(model, None)
         },
         "tasks": {
             TASK_NAME_MAP.get(task, task): init_task_dict(task) for task in TASK_NAMES
         },
-        "model_card": ""
+        # "model_card": MODEL_CARDS.get(model, None)
+        "model_card": get_model_card(model)
     }
 
 
