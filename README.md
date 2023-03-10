@@ -2,7 +2,62 @@
 
 This repository implements experiments/baselines for SuperLim 2.
 
-Repository development guide:
+## Reproduce results
+
+### Setup Environment (optional)
+
+```
+1. wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
+2. bash Anaconda3-2022.10-Linux-x86_64.sh
+3. yes, yes, yes
+4. conda create -n ptgpu_venv python=3.9
+5. conda activate ptgpu_venv
+6. conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
+```
+
+### Setup Repository (optional)
+
+```
+1. git clone git@github.com:JoeyOhman/SuperLim-2-Testing.git
+2. cd SuperLim-2-Testing
+3. pip install -r requirements.txt
+4. tmux new -s exp
+5. tmux attach -t exp
+```
+
+### Run Experiments
+
+```
+1. Download all data to data directory 
+2. Setup wandb key in api_wandb_key.txt
+3. Configure GPUs to use in run_bert_experiments.sh
+4. Specify models and tasks in run_bert_experiments.sh
+5. Specify accumulation sizes for models in bert/bert_experiment_driver.py to suit your available GPU memory.
+6. ./run_dummy_experiments.sh
+7. ./run_bert_experiments.sh (this includes gpt experiments if wanted)
+8. Run the collect_results/create_table.py script, it will collect results in results/experiments/metrics directory and create the results/experiments/metrics/model_deliverables directory with json files. 
+```
+
+This will fine-tune 672 models in total, if the 4 gpt-models are included (they are not by default). 
+84 models will be saved, one for each task-model combination.
+
+### Find The Results
+
+```
+1. Individual experiment results: results/experiments/metrics/
+2. Packed results grouped by model: results/experiments/metrics/model_deliverables/
+3. Model predictions on dev and test files: results/experiments/predictions/
+4. Best fine-tuned models: results/experiments/models/
+```
+
+The tasks are named slightly different in this repository since it was developed during the development of SuperLim 2.
+See `task_to_info_dict` in `Experiment.py` for the task names used. When the final results files are created, these 
+names are mapped to the official names.
+
+
+<br>
+
+## **Repository development guide**
 
 The class hierarchy handles much of the execution flow, like a framework.
 
@@ -10,7 +65,7 @@ The class hierarchy handles much of the execution flow, like a framework.
 
 - `paths.py` defines paths that can be imported, and should work cross-platform and in docker containers etc 
 - `compute_metrics.py` implements functions to compute metrics required for the experiments
-- `collect_metrics.py` loads the experiment results in the pre-defined results file hierarchy and plots a table. TODO: make this generate json-files according to template.
+- `collect_metrics.py` loads the experiment results in the pre-defined results file hierarchy and plots a table. 
 
 ## Class Hierarchy
 
@@ -35,7 +90,7 @@ Inherits Experiment, and uses `sklearn.dummy` to provide a dummy baseline.
 This works for any task that has training data and is a classification or regression problem.
 
 ## Adding a new task
-1. Make sure the data is accessible, preferably via HF Datasets, or otherwise through TSV files
+1. Make sure the data is accessible, preferably via HF Datasets, or otherwise through JSONL/TSV files
 2. Create a function `reformat_dataset_<task_name>` in `dataset_loader.py`, that converts the dataset into a dataset of desired format.
 3. Add a pointer to this function in the dictionary `TASK_TO_REFORMAT_FUN` above the `load_dataset_by_task` function in the same file. 
 4. Add an entry with the required meta-data for this task in `Experiment.py`, in the dictionary `task_to_info_dict`.
@@ -281,18 +336,3 @@ Traditional ML baselines take a random answer from the candidates that the model
 ### SweMNLI Traditional ML baselines
 For these traditional ML baselines, only 5% (20,000 samples) of the training set is used for training. 
 This did not seem to have a noticable effect on the end performance, and the motivation for this was to reduce the training time.
-
-## Reproduce results
-
-```
-1. Download all data to data directory 
-2. Setup wandb key in api_wandb_key.txt
-3. Configure GPUs to use in run_bert_experiments.sh
-4. Specify models and tasks in run_bert_experiments.sh
-5. Specify accumulation sizes for models in bert/bert_experiment_driver.py to suit your available GPU memory.
-6. ./run_dummy_experiments.sh
-7. ./run_bert_experiments.sh (this includes gpt experiments if wanted)
-8. Run the collect_results/create_table.py script, it will collect results in results/experiments/metrics directory and create the results/experiments/metrics/model_deliverables directory with json files. 
-```
-
-This will fine-tune 672 models in total, if the 4 gpt-models are included.
