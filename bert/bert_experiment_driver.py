@@ -33,11 +33,11 @@ ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium"]
 
 
 def main(args):
-    # data_fraction = 1.0
+    data_fraction = 1.0
     # data_fraction = 0.01
-    data_fraction = 0.25
+    # data_fraction = 0.25
     quick_run = False
-    hps = False
+    hps = True
 
     if args.model_name in ACC_STEPS_8:
         accumulation_steps = 8
