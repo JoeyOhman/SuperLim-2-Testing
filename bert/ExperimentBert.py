@@ -1,9 +1,12 @@
+import json
+import os
+
 import torch
 import transformers
 import numpy as np
 
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Tuple
 
 from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification, TrainingArguments
 
@@ -11,7 +14,7 @@ from Experiment import Experiment
 from bert.CustomTrainer import CustomTrainer
 from bert.bert_utils import find_best_model_and_clean
 from bert.hps import hp_tune
-from paths import TRAINER_OUTPUT_PATH
+from paths import TRAINER_OUTPUT_PATH, MODELS_PATH, get_experiment_metrics_path
 from utils import get_device
 
 
@@ -19,9 +22,15 @@ from utils import get_device
 class ExperimentBert(Experiment, ABC):
 
     def __init__(self, task_name: str, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool,
-                 quick_run: bool):
+                 quick_run: bool, evaluate_only: bool):
         assert accumulation_steps == 1 or accumulation_steps % 2 == 0, "accumulation_steps must be 1, or multiple of 2"
-        super().__init__(task_name, model_name, data_fraction)
+        if evaluate_only:
+            safe_task = task_name.replace("/", "-")
+            safe_model = model_name.replace("/", "-")
+            self.model_path = os.path.join(MODELS_PATH, safe_task, safe_model)
+        else:
+            self.model_path = model_name
+        super().__init__(task_name, model_name, data_fraction, evaluate_only)
 
         self.num_train_epochs = 10
         # self.num_train_epochs = 1
@@ -172,7 +181,7 @@ class ExperimentBert(Experiment, ABC):
 
     def _load_tokenizer(self):
         transformers.logging.set_verbosity_error()
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         if "gpt" in self.model_name:
             tokenizer.padding_side = "left"
             if self.use_resize:
@@ -183,14 +192,14 @@ class ExperimentBert(Experiment, ABC):
         return tokenizer
 
     def _load_config(self):
-        config = AutoConfig.from_pretrained(self.model_name)
+        config = AutoConfig.from_pretrained(self.model_path)
         config.num_labels = self.num_classes
         if "gpt2" in self.model_name or config.pad_token_id is None:
             config.pad_token_id = config.eos_token_id
         return config
 
     def _load_model(self, config, model_path=None):
-        model_name = self.model_name if model_path is None else model_path
+        model_name = self.model_path if model_path is None else model_path
         model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config,
                                                                    ignore_mismatched_sizes=True)
 
@@ -201,7 +210,7 @@ class ExperimentBert(Experiment, ABC):
 
     def _run_hps(self, config, tokenizer, train_ds, val_ds):
         def _model_init(trial=None):
-            model = AutoModelForSequenceClassification.from_pretrained(self.model_name, config=config,
+            model = AutoModelForSequenceClassification.from_pretrained(self.model_path, config=config,
                                                                        ignore_mismatched_sizes=True)
             if "gpt" in self.model_name and self.use_resize:
                 model.resize_token_embeddings(len(self.tokenizer))
@@ -230,6 +239,14 @@ class ExperimentBert(Experiment, ABC):
         }
         return trainer, hp_dict
 
+    def _load_metrics_hp_dict(self):
+        metrics_path = get_experiment_metrics_path(self.task_name, self.model_name)
+        metrics_file = os.path.join(metrics_path, "metrics.json")
+        with open(metrics_file, 'r') as f:
+            metrics_dict = json.loads(f.read())
+
+        return metrics_dict["hyperparameters"]
+
     def _evaluate(self, trainer, val_ds, test_ds):
         # Try overridden predict
         # custom_predict_result = self._predict(trainer.model, val_ds, test_ds)
@@ -240,6 +257,7 @@ class ExperimentBert(Experiment, ABC):
         # Trainer native evaluation
         metrics_eval = trainer.evaluate()
         trainer.log_metrics("eval", metrics_eval)
+        predictions_eval, labels_eval, metrics_eval_not_used = trainer.predict(val_ds)
 
         predictions, labels, metrics_test = trainer.predict(test_ds)
         # predictions = np.argmax(predictions, axis=1)
@@ -253,30 +271,45 @@ class ExperimentBert(Experiment, ABC):
             "test_metrics_obj": metrics_test
         }
 
-        return metric_dict
+        return metric_dict, predictions_eval, predictions
 
-    def run_impl(self) -> Dict[str, float]:
+    def run_impl(self) -> Tuple[Dict[str, float], list, list]:
         # model_args, data_args, training_args = get_hf_args()
         # model_name_or_path = model_args.model_name_or_path
 
+        # TODO: make sure no task alters the convention of one dataset row (differently than raw dataset)
         train_ds, val_ds, test_ds = self.create_dataset()
 
-        if self.hps:
-            trainer, hp_dict = self._run_hps(self.config, self.tokenizer, train_ds, val_ds)
-        else:
-            trainer, hp_dict = self._run_no_hps(self.config, self.tokenizer, train_ds, val_ds)
+        if self.evaluate_only:
+            print("Only evaluating, no training will be done!")
+            # TODO:
+            #  Load trained model
+            #  Get it into Trainer (maybe a model can be loaded with Trainer)
+            #  Call evaluate like below, maybe just if-statement
+            model = self._load_model(self.config)
+            trainer = CustomTrainer.init_trainer(self.training_args, model, self.tokenizer, train_ds, val_ds,
+                                                 self._compute_metrics)
+            hp_dict = self._load_metrics_hp_dict()
+            pass
 
-        hp_dict["batch_size"] = hp_dict["per_device_train_batch_size"] * self.accumulation_steps
-        del hp_dict["per_device_train_batch_size"]
-        hp_dict["num_train_epochs"] = self.num_train_epochs
-        hp_dict["warmup_ratio"] = self.warmup_ratio
-        hp_dict["weight_decay"] = self.weight_decay
-        hp_dict["fp16"] = self.fp16
+        else:
+            if self.hps:
+                trainer, hp_dict = self._run_hps(self.config, self.tokenizer, train_ds, val_ds)
+            else:
+                trainer, hp_dict = self._run_no_hps(self.config, self.tokenizer, train_ds, val_ds)
+
+            hp_dict["batch_size"] = hp_dict["per_device_train_batch_size"] * self.accumulation_steps
+            del hp_dict["per_device_train_batch_size"]
+
+            hp_dict["num_train_epochs"] = self.num_train_epochs
+            hp_dict["warmup_ratio"] = self.warmup_ratio
+            hp_dict["weight_decay"] = self.weight_decay
+            hp_dict["fp16"] = self.fp16
 
         # Let ExperimentBertSweMNLI use this
         self.hp_dict = hp_dict
 
-        metric_dict = self._evaluate(trainer, val_ds, test_ds)
+        metric_dict, predictions_eval, predictions_test = self._evaluate(trainer, val_ds, test_ds)
 
         metric_dict["hyperparameters"] = hp_dict
 
@@ -284,4 +317,4 @@ class ExperimentBert(Experiment, ABC):
         # with open(experiment_metric_path + "/metrics.json", 'w') as f:
         #     f.write(json.dumps(metric_dict, ensure_ascii=False, indent="\t"))
 
-        return metric_dict
+        return metric_dict, predictions_eval, predictions_test

@@ -12,7 +12,7 @@ from sklearn.metrics import mean_squared_error
 
 accuracy_metric = evaluate.load("accuracy")
 f1_metric = evaluate.load("f1", )
-spearmanr_metric = evaluate.load("spearmanr")
+# spearmanr_metric = evaluate.load("spearmanr")
 
 
 def _ensure_flattened(list_or_array):
@@ -29,23 +29,23 @@ def _compute_metrics_rmse(preds_labels_tuple):
     return {"rmse": rmse}
 
 
-def _compute_metrics_normalized_spearmanr(preds_labels_tuple):
-    predictions, labels = preds_labels_tuple
-    # predictions = np.argmax(predictions, axis=1)
-    spearman_r = spearmanr_metric.compute(references=labels, predictions=predictions)
-    spearman_r["spearmanr"] = (spearman_r["spearmanr"] + 1) / 2
-    return spearman_r
+# def _compute_metrics_normalized_spearmanr(preds_labels_tuple):
+#     predictions, labels = preds_labels_tuple
+#     # predictions = np.argmax(predictions, axis=1)
+#     spearman_r = spearmanr_metric.compute(references=labels, predictions=predictions)
+#     spearman_r["spearmanr"] = (spearman_r["spearmanr"] + 1) / 2
+#     return spearman_r
 
 
-def _compute_metrics_rmse_and_normalized_spearmanr(preds_labels_tuple):
-    predictions, labels = preds_labels_tuple
-    # predictions = np.argmax(predictions, axis=1)
-    rmse = mean_squared_error(labels, predictions, squared=False)
-    spearman_r = spearmanr_metric.compute(references=labels, predictions=predictions)
-    spearman_r["spearmanr"] = (spearman_r["spearmanr"] + 1) / 2
-    combined_dict = {"rmse": rmse}
-    combined_dict.update(spearman_r)
-    return combined_dict
+# def _compute_metrics_rmse_and_normalized_spearmanr(preds_labels_tuple):
+#     predictions, labels = preds_labels_tuple
+#     # predictions = np.argmax(predictions, axis=1)
+#     rmse = mean_squared_error(labels, predictions, squared=False)
+#     spearman_r = spearmanr_metric.compute(references=labels, predictions=predictions)
+#     spearman_r["spearmanr"] = (spearman_r["spearmanr"] + 1) / 2
+#     combined_dict = {"rmse": rmse}
+#     combined_dict.update(spearman_r)
+#     return combined_dict
 
 
 def _compute_metrics_accuracy(preds_labels_tuple):
@@ -69,6 +69,7 @@ def _compute_metrics_f1(preds_labels_tuple):
 
 def _compute_metrics_krippendorff(preds_labels_tuple, level_of_measurement):
     predictions, labels = preds_labels_tuple
+
     if np.ndim(predictions) > 1 and level_of_measurement != "interval":
         predictions = np.argmax(predictions, axis=1)
     predictions = _ensure_flattened(predictions)
@@ -99,11 +100,11 @@ def _compute_metrics_krippendorff_regression(preds_labels_tuple):
 
 metric_to_compute_fun = {
     # "rmse": _compute_metrics_rmse,
-    "rmse": _compute_metrics_rmse_and_normalized_spearmanr,
+    # "rmse": _compute_metrics_rmse_and_normalized_spearmanr,
     "accuracy": _compute_metrics_accuracy,
     "f1": _compute_metrics_f1,
-    "spearmanr": _compute_metrics_normalized_spearmanr,
-    "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr,
+    # "spearmanr": _compute_metrics_normalized_spearmanr,
+    # "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr,
     "krippendorff_nominal": _compute_metrics_krippendorff_classification,
     "krippendorff_interval": _compute_metrics_krippendorff_regression
 }

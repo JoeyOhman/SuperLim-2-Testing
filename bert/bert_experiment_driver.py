@@ -3,6 +3,7 @@ import argparse
 import transformers
 
 from bert.ExperimentBertABSAbankImm import ExperimentBertABSAbankImm
+from bert.ExperimentBertArgumentationSentences import ExperimentBertArgumentationSentences
 from bert.ExperimentBertDaLAJ import ExperimentBertDaLAJ
 from bert.ExperimentBertReviews import ExperimentBertReviews
 from bert.ExperimentBertSweFAQ import ExperimentBertSweFAQ
@@ -13,6 +14,7 @@ from bert.ExperimentBertSweWinograd import ExperimentBertSweWinograd
 from utils import set_seed
 
 task_to_bert_class = {
+    "ArgumentationSentences": ExperimentBertArgumentationSentences,
     "ABSAbank-Imm": ExperimentBertABSAbankImm,
     "DaLAJ": ExperimentBertDaLAJ,
     "SweFAQ": ExperimentBertSweFAQ,
@@ -31,11 +33,11 @@ ACC_STEPS_8 = ["AI-Sweden-Models/gpt-sw3-356m", "gpt2-medium"]
 
 
 def main(args):
-    data_fraction = 1.0
+    # data_fraction = 1.0
     # data_fraction = 0.01
-    # data_fraction = 0.25
+    data_fraction = 0.25
     quick_run = False
-    hps = True
+    hps = False
 
     if args.model_name in ACC_STEPS_8:
         accumulation_steps = 8
@@ -49,7 +51,7 @@ def main(args):
     # accumulation_steps = 4
 
     bert_class = task_to_bert_class[args.task_name]
-    bert_class(args.model_name, accumulation_steps, data_fraction, hps, quick_run).run()
+    bert_class(args.model_name, accumulation_steps, data_fraction, hps, quick_run, args.evaluate_only).run()
 
 
 if __name__ == '__main__':
@@ -58,5 +60,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, required=True, help="e.g. bert-base-cased")
     parser.add_argument("--task_name", type=str, required=True, help="e.g. SweParaphrase")
+    parser.add_argument("--evaluate_only", action='store_true', help="Evaluate only, i.e. no training")
+    parser.set_defaults(evaluate_only=False)
     _args = parser.parse_args()
     main(_args)

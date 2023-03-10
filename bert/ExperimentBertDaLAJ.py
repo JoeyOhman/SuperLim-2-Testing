@@ -3,10 +3,11 @@ from bert.ExperimentBert import ExperimentBert
 
 class ExperimentBertDaLAJ(ExperimentBert):
 
-    def __init__(self, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool, quick_run: bool):
+    def __init__(self, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool, quick_run: bool,
+                 evaluate_only: bool):
         task_name = "DaLAJ"
         # max_input_length = 128
-        super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run)
+        super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run, evaluate_only)
 
     def preprocess_data(self, dataset_split):
         dataset_split = dataset_split.map(

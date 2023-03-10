@@ -3,6 +3,7 @@ import os
 import random
 from collections import defaultdict
 
+import numpy as np
 from datasets import load_dataset, Dataset
 from pathlib import Path
 
@@ -12,8 +13,103 @@ from paths import TSV_PATH, DATASET_PATH
 DATASET_PATH_TEMPLATE = os.path.join(DATASET_PATH, "{task}")
 
 
+def convert_label_to_original(task, label):
+    if task == "DaLAJ":
+        if label == 1:
+            return "correct"
+        elif label == 0:
+            return "incorrect"
+        else:
+            print(f"LABEL ERROR for task={task}, label={label}")
+            assert False
+
+    elif task == "SweWiC":
+        if label == 0:
+            return "different_sense"
+        elif label == 1:
+            return "same_sense"
+        else:
+            print(f"LABEL ERROR for task={task}, label={label}")
+            assert False
+
+    elif task == "SweMNLI":
+        if label == 0:
+            return "entailment"
+        elif label == 1:
+            return "contradiction"
+        elif label == 2:
+            return "neutral"
+        else:
+            print(f"LABEL ERROR for task={task}, label={label}")
+            assert False
+
+    elif task == "SweWinograd":
+        if label == 1:
+            return "coreferring"
+        elif label == 0:
+            return "not_coreferring"
+        else:
+            print(f"LABEL ERROR for task={task}, label={label}")
+            assert False
+
+    elif task == "SweWinogender":
+        if label == 0:
+            return "entailment"
+        elif label == 1:
+            return "contradiction"
+        elif label == 2:
+            return "neutral"
+        else:
+            print(f"LABEL ERROR for task={task}, label={label}")
+            assert False
+
+    # SweFAQ should be in a good format already
+    elif task == "ArgumentationSentences":
+        if label == 0:
+            return "con"
+        elif label == 1:
+            return "pro"
+        elif label == 2:
+            return "non"
+        else:
+            print(f"LABEL ERROR for task={task}, label={label}")
+            assert False
+
+    else:
+        return label
+
+
+def reformat_dataset_ArgumentationSentences(dataset, split_name):
+    new_dataset_dict = {
+        "sentence1": [],
+        "sentence2": [],
+        "labels": []
+    }
+
+    for sample in dataset:
+        new_dataset_dict["sentence1"].append(sample["sentence"])
+        new_dataset_dict["sentence2"].append(sample["topic"])
+
+        if sample["label"] == "con":
+            label = 0
+        elif sample["label"] == "pro":
+            label = 1
+        elif sample["label"] == "non":
+            label = 2
+        else:
+            print(f"label incorrect in data file {split_name}:", sample["label"])
+            assert False
+
+        new_dataset_dict["labels"].append(label)
+
+    return Dataset.from_dict(new_dataset_dict)
+
+
 def reformat_dataset_SweParaphrase(dataset, split_name):
-    dataset = dataset.rename_column("Score", "labels")
+    # dataset = dataset.rename_column("Score", "labels")
+    dataset = dataset.rename_column("label", "labels")
+    dataset = dataset.rename_column("sentence_1", "Sentence 1")
+    dataset = dataset.rename_column("sentence_2", "Sentence 2")
     return dataset
 
 
@@ -22,6 +118,66 @@ def reformat_dataset_ABSAbankImm(dataset, split_name):
     return dataset
 
 
+# def reformat_dataset_SweFAQ(dataset, split_name):
+#     new_dataset_dict = {
+#         "question": [],
+#         "answer": [],
+#         "labels": []
+#     }
+#
+#     # Group samples by categories
+#     categories = defaultdict(list)
+#     for sample in dataset:
+#         cat_id = sample["category_id"]
+#         categories[cat_id].append(sample)
+#
+#     # Category probably not needed
+#     for category, samples in categories.items():
+#
+#         for idx, sample in enumerate(samples):
+#             # Positive sample
+#             q, a = sample["question"], sample["correct_answer"]
+#             new_dataset_dict["question"].append(q)
+#             new_dataset_dict["answer"].append(a)
+#             new_dataset_dict["labels"].append(1)
+#
+#             # Negative samples (might need to under sample here)
+#             other_indices = [i for i in range(len(samples)) if i != idx]
+#             choice = random.choice(other_indices)
+#
+#             incorrect_answer = samples[choice]["correct_answer"]
+#             new_dataset_dict["question"].append(q)
+#             new_dataset_dict["answer"].append(incorrect_answer)
+#             new_dataset_dict["labels"].append(0)
+#
+#     return Dataset.from_dict(new_dataset_dict)
+#
+#
+# def reformat_eval_set_swefaq(ds_split):
+#     new_dataset_dict = {
+#         "question": [],
+#         "answer": [],
+#         "labels": []
+#     }
+#
+#     # Group samples by categories
+#     categories = defaultdict(list)
+#     for sample in ds_split:
+#         cat_id = sample["category_id"]
+#         categories[cat_id].append(sample)
+#
+#     for category, samples in categories.items():
+#         questions = [sample["question"] for sample in samples]
+#         answers = [sample["correct_answer"] for sample in samples]
+#
+#         # For each question, add all answers in the category
+#         for idx, question in enumerate(questions):
+#             new_dataset_dict["question"].append(question)
+#             new_dataset_dict["answer"].append(answers)
+#             new_dataset_dict["labels"].append(idx)
+#
+#     return Dataset.from_dict(new_dataset_dict)
+
 def reformat_dataset_SweFAQ(dataset, split_name):
     new_dataset_dict = {
         "question": [],
@@ -29,47 +185,44 @@ def reformat_dataset_SweFAQ(dataset, split_name):
         "labels": []
     }
 
-    # Group samples by categories
-    categories = defaultdict(list)
     for sample in dataset:
-        cat_id = sample["category_id"]
-        categories[cat_id].append(sample)
+        question = sample["question"]
+        correct_index = sample["label"]
+        correct_answer = sample["candidate_answers"][correct_index]
+        other_indices = [i for i in range(len(sample["candidate_answers"])) if i != correct_index]
+        incorrect_index = random.choice(other_indices)
+        incorrect_answer = sample["candidate_answers"][incorrect_index]
 
-    # Category probably not needed
-    for category, samples in categories.items():
-        # if split_name == "train":
-        for idx, sample in enumerate(samples):
-            # Positive sample
-            q, a = sample["question"], sample["correct_answer"]
-            new_dataset_dict["question"].append(q)
-            new_dataset_dict["answer"].append(a)
-            new_dataset_dict["labels"].append(1)
+        # Positive sample
+        new_dataset_dict["question"].append(question)
+        new_dataset_dict["answer"].append(correct_answer)
+        new_dataset_dict["labels"].append(1)
 
-            # Negative samples (might need to under sample here)
-            other_indices = [i for i in range(len(samples)) if i != idx]
-            choice = random.choice(other_indices)
+        # Negative sample
+        new_dataset_dict["question"].append(question)
+        new_dataset_dict["answer"].append(incorrect_answer)
+        new_dataset_dict["labels"].append(0)
 
-            incorrect_answer = samples[choice]["correct_answer"]
-            new_dataset_dict["question"].append(q)
-            new_dataset_dict["answer"].append(incorrect_answer)
-            new_dataset_dict["labels"].append(0)
-            # for other_idx, other_sample in enumerate(samples):
-            #     if idx == other_idx:
-            #         continue
-            #     incorrect_answer = other_sample["correct_answer"]
-            #     new_dataset_dict["question"].append(q)
-            #     new_dataset_dict["answer"].append(incorrect_answer)
-            #     new_dataset_dict["labels"].append(0)
-        # else:
-        #     # dev/test
-        #     questions = [sample["question"] for sample in samples]
-        #     answers = [sample["correct_answer"] for sample in samples]
-        #
-        #     # For each question, add all answers in the category
-        #     for idx, question in enumerate(questions):
-        #         new_dataset_dict["question"].append(question)
-        #         new_dataset_dict["answer"].append(answers)
-        #         new_dataset_dict["labels"].append(idx)
+    return Dataset.from_dict(new_dataset_dict)
+
+
+def reformat_eval_set_swefaq(ds_split):
+    new_dataset_dict = {
+        "question": [],
+        "answer": [],
+        "labels": []
+    }
+
+    for sample in ds_split:
+        question = sample["question"]
+        label = sample["label"]
+        answers = sample["candidate_answers"]
+
+        assert len(answers) >= label - 1
+
+        new_dataset_dict["question"].append(question)
+        new_dataset_dict["answer"].append(answers)
+        new_dataset_dict["labels"].append(label)
 
     return Dataset.from_dict(new_dataset_dict)
 
@@ -103,32 +256,6 @@ def reformat_dataset_DaLAJ(dataset, split_name):
     return Dataset.from_dict(new_dataset_dict)
 
 
-def reformat_eval_set_swefaq(ds_split):
-    new_dataset_dict = {
-        "question": [],
-        "answer": [],
-        "labels": []
-    }
-
-    # Group samples by categories
-    categories = defaultdict(list)
-    for sample in ds_split:
-        cat_id = sample["category_id"]
-        categories[cat_id].append(sample)
-
-    for category, samples in categories.items():
-        questions = [sample["question"] for sample in samples]
-        answers = [sample["correct_answer"] for sample in samples]
-
-        # For each question, add all answers in the category
-        for idx, question in enumerate(questions):
-            new_dataset_dict["question"].append(question)
-            new_dataset_dict["answer"].append(answers)
-            new_dataset_dict["labels"].append(idx)
-
-    return Dataset.from_dict(new_dataset_dict)
-
-
 def reformat_dataset_SweWiC(dataset, split_name):
     new_dataset_dict = {
         "sentence1": [],
@@ -143,7 +270,7 @@ def reformat_dataset_SweWiC(dataset, split_name):
         new_dataset_dict["sentence2"].append(sample["second"]["context"])
         new_dataset_dict["word1"].append(sample["first"]["word"]["text"])
         new_dataset_dict["word2"].append(sample["second"]["word"]["text"])
-        label = 1 if sample["same_sense"] else 0
+        label = 1 if sample["label"] == "same_sense" else 0
         new_dataset_dict["labels"].append(label)
 
     return Dataset.from_dict(new_dataset_dict)
@@ -207,6 +334,7 @@ def reformat_dataset_Reviews(dataset, split_name):
 
 
 TASK_TO_REFORMAT_FUN = {
+    "ArgumentationSentences": reformat_dataset_ArgumentationSentences,
     "SweParaphrase": reformat_dataset_SweParaphrase,
     "SweFAQ": reformat_dataset_SweFAQ,
     "DaLAJ": reformat_dataset_DaLAJ,
@@ -286,7 +414,7 @@ def load_dataset_by_task(task_name: str, data_fraction: float = 1.0, from_hf: bo
     return train_ds, dev_ds, test_ds
 
 
-def load_winogender():
+def load_winogender(reformat=True):
     dataset_path = DATASET_PATH_TEMPLATE.format(task="SweWinogender")
     extension = [pt for pt in Path(dataset_path).rglob("test.*")][0].name.split(".")[-1]
     is_json = "json" in extension
@@ -304,6 +432,9 @@ def load_winogender():
     }
 
     test_ds = dataset["test"]
+    if not reformat:
+        return test_ds
+
     for sample in test_ds:
         new_dataset_dict["sentence1"].append(sample["premise"])
         new_dataset_dict["sentence2"].append(sample["hypothesis"])

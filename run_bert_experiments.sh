@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DEBUG=0
+EVALUATE_ONLY=0
 
 # Only use wandb if not debugging
 if [ "$DEBUG" == 0 ]; then
@@ -22,11 +23,26 @@ export PYTHONPATH="${pwd}:$PYTHONPATH"
 
 mkdir -p logs
 
-# declare -a models=("KB/bert-base-swedish-cased")
+# Includes gpt models:
 # declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large" "gpt2" "AI-Sweden-Models/gpt-sw3-126m" "gpt2-medium" "AI-Sweden-Models/gpt-sw3-356m")
+
+# All but gpt models:
 declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large")
+
+# All Tasks
 # declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC", "DaLAJ", "SweWinograd", "SweMNLI")
-declare -a tasks=("DaLAJ")
+
+# declare -a models=("KB/bert-base-swedish-cased")
+
+# declare -a tasks=("DaLAJ")
+# declare -a tasks=("SweParaphrase")
+# declare -a tasks=("ABSAbank-Imm")
+# declare -a tasks=("SweMNLI")
+# declare -a tasks=("SweWiC")
+# declare -a tasks=("SweWinograd")
+
+# declare -a tasks=("SweFAQ")
+declare -a tasks=("ArgumentationSentences")
 
 # Loop through models
 for model in "${models[@]}"
@@ -37,12 +53,17 @@ do
         # Replace slash with dash in model name to avoid creating sub-directories
         safe_model_name="${model/"/"/-}"
         metrics_file="results/experiments/metrics/${task}/${safe_model_name}/metrics.json"
-        if test -f "$metrics_file"; then
-            echo "$metrics_file exists, SKIPPING."
-            continue
+        if [ "$EVALUATE_ONLY" == 0 ]; then
+          if test -f "$metrics_file"; then
+              echo "$metrics_file exists, SKIPPING."
+              continue
+          fi
         fi
         log_file_path="logs/log_$(date +"%Y-%m-%d_%H:%M:%S")_${safe_model_name}_${task}.txt"
         run_cmd="python3 bert/bert_experiment_driver.py --model_name $model --task_name $task"
+        if [ "$EVALUATE_ONLY" == 1 ]; then
+          run_cmd="${run_cmd} --evaluate_only"
+        fi
         echo "****************************************************************************************"
         echo "Model=$model"
         echo "Task=$task"

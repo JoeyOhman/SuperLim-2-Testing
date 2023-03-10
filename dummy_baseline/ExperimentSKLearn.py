@@ -1,5 +1,5 @@
 import random
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 from sklearn.pipeline import make_pipeline
@@ -130,9 +130,9 @@ class ExperimentSKLearn(Experiment):
             "test": test_score[self.metric]
         }
 
-        return metric_dict
+        return metric_dict, predictions_eval, predictions_test
 
-    def run_impl(self) -> Dict[str, float]:
+    def run_impl(self) -> Tuple[Dict[str, float], list, list]:
         train_ds, dev_ds, test_ds = self._load_data()
         # train_labels = train_ds["labels"]
         # dev_labels = dev_ds["labels"]

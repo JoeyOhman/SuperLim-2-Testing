@@ -7,15 +7,16 @@ from pathlib import Path
 
 from bert.ExperimentBert import ExperimentBert
 from dataset_loaders.dataset_loader import load_winogender
-from paths import get_experiment_metrics_path
+from paths import get_experiment_metrics_path, get_experiment_predictions_path
 
 
 class ExperimentBertSweMNLI(ExperimentBert):
 
-    def __init__(self, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool, quick_run: bool):
+    def __init__(self, model_name: str, accumulation_steps: int, data_fraction: float, hps: bool, quick_run: bool,
+                 evaluate_only: bool):
         task_name = "SweMNLI"
         # max_input_length = 128
-        super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run)
+        super().__init__(task_name, model_name, accumulation_steps, data_fraction, hps, quick_run, evaluate_only)
 
     def preprocess_data(self, dataset_split):
         # Map works sample by sample or in batches if batched=True
@@ -30,7 +31,7 @@ class ExperimentBertSweMNLI(ExperimentBert):
             columns.append('token_type_ids')
         dataset_split.set_format(type='torch', columns=columns)
 
-        dataset_split = dataset_split.remove_columns(['sentence1', 'sentence2'])
+        # dataset_split = dataset_split.remove_columns(['sentence1', 'sentence2'])
 
         # for sample in dataset_split:
         #     print(sample)
@@ -93,6 +94,16 @@ class ExperimentBertSweMNLI(ExperimentBert):
         model.to(self.device)
         model.eval()
         predictions, labels, tuple_ids = self._predict_winogender(model, winogender_test_ds)
+
+        # Store predictions
+        experiment_predictions_path = get_experiment_predictions_path("SweWinogender", self.model_name)
+        Path(experiment_predictions_path).mkdir(parents=True, exist_ok=True)
+
+        test_ds = load_winogender(reformat=False)
+        predictions_list = self._get_jsonl_with_predictions(test_ds, predictions)
+        strings_to_write = "\n".join([json.dumps(s, ensure_ascii=False) for s in predictions_list])
+        with open(experiment_predictions_path + "/test.jsonl", 'w') as f:
+            f.write(strings_to_write)
 
         # num_correct = 0
         # num_tot = len(predictions)

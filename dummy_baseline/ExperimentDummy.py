@@ -1,5 +1,5 @@
 import random
-from typing import Dict
+from typing import Dict, Tuple
 from sklearn.dummy import DummyRegressor, DummyClassifier
 
 from Experiment import Experiment
@@ -12,7 +12,7 @@ class ExperimentDummy(Experiment):
         model_name = "Random" if is_random else "MaxFreq/Avg"
         data_fraction = 1.0
         self.is_random = is_random
-        super().__init__(task_name, model_name, data_fraction)
+        super().__init__(task_name, model_name, data_fraction, evaluate_only=False)
 
     def _train_regression(self, train_labels):
         regressor = None
@@ -48,9 +48,9 @@ class ExperimentDummy(Experiment):
             "test": test_score[self.metric]
         }
 
-        return metric_dict
+        return metric_dict, predictions_eval, predictions_test
 
-    def run_impl(self) -> Dict[str, float]:
+    def run_impl(self) -> Tuple[Dict[str, float], list, list]:
         train_ds, dev_ds, test_ds = self._load_data()
         train_labels = train_ds["labels"]
         dev_labels = dev_ds["labels"]
