@@ -5,6 +5,8 @@ import krippendorff
 import numpy as np
 from sklearn.metrics import mean_squared_error
 
+from compute_alpha_gerlof import krippendorff_alpha, interval_metric
+
 
 # def get_compute_metrics_fun(metric_name: str):
 #     fun_name = "_compute_metrics_" + metric_name
@@ -98,6 +100,22 @@ def _compute_metrics_krippendorff_regression(preds_labels_tuple):
     return alpha
 
 
+def _compute_metrics_krippendorff_regression_gerlof(preds_labels_tuple):
+    predictions, labels = preds_labels_tuple
+
+    if np.ndim(predictions) > 1:
+        predictions = np.argmax(predictions, axis=1)
+    predictions = _ensure_flattened(predictions)
+    labels = _ensure_flattened(labels)
+    preds_labels_tuple = (predictions, labels)
+
+    # alpha = _compute_metrics_krippendorff(preds_labels_tuple, "interval")
+    alpha = {"krippendorff_interval": krippendorff_alpha([predictions, labels], metric=interval_metric)}
+    rmse = _compute_metrics_rmse(preds_labels_tuple)
+    alpha.update(rmse)
+    return alpha
+
+
 metric_to_compute_fun = {
     # "rmse": _compute_metrics_rmse,
     # "rmse": _compute_metrics_rmse_and_normalized_spearmanr,
@@ -106,7 +124,8 @@ metric_to_compute_fun = {
     # "spearmanr": _compute_metrics_normalized_spearmanr,
     # "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr,
     "krippendorff_nominal": _compute_metrics_krippendorff_classification,
-    "krippendorff_interval": _compute_metrics_krippendorff_regression
+    # "krippendorff_interval": _compute_metrics_krippendorff_regression,
+    "krippendorff_interval": _compute_metrics_krippendorff_regression_gerlof,
 }
 
 if __name__ == '__main__':
@@ -128,6 +147,9 @@ if __name__ == '__main__':
     # {'krippendorff_interval': -0.15348706936793954, 'rmse': 0.8139410298049854}
     # {'krippendorff_interval': 0.8268135561572215, 'rmse': 0.8139410298049854}
     print("Res:", res)
+
+    res = _compute_metrics_krippendorff_regression_gerlof([preds, labels])
+    print("Res Gerlof:", res)
     # res_wrapped = _compute_metrics_krippendorff_regression((preds_wrapped, labels))
     # print("Res_wrapped:", res_wrapped)
     # res = _compute_metrics_krippendorff_classification((preds, labels))

@@ -4,13 +4,14 @@ from utils import set_seed
 
 
 def main():
-    # tasks = ["SweParaphrase", "ABSAbank-Imm", "SweWiC", "SweFAQ", "SweWinograd", "DaLAJ", "SweMNLI"]
-    tasks = ["SweParaphrase"]
+    tasks = ["SweParaphrase", "ABSAbank-Imm", "SweWiC", "SweFAQ", "SweWinograd", "DaLAJ", "SweMNLI",
+             "ArgumentationSentences"]
+    # tasks = ["ABSAbank-Imm", "SweWiC", "SweFAQ", "SweWinograd", "DaLAJ", "ArgumentationSentences"]
+    # tasks = ["SweMNLI"]
+    # tasks = ["SweParaphrase"]
     for task in tasks:
         print(task)
         print("Dummies")
-        ExperimentDummy(task, is_random=False).run()
-        exit()
         ExperimentDummy(task, is_random=True).run()
         ExperimentDummy(task, is_random=False).run()
         # if task != "SweFAQ":

@@ -84,7 +84,7 @@ class Experiment(ABC):
                 ["/dev.jsonl", "/test.jsonl"], [predictions_eval, predictions_test], [dev_ds, test_ds]):
 
             predictions_list = self._get_jsonl_with_predictions(ds, predictions)
-            print(predictions_list[-1])
+            # print(predictions_list[-1])
             strings_to_write = "\n".join([json.dumps(s, ensure_ascii=False) for s in predictions_list])
 
             with open(experiment_predictions_path + dev_test_name, 'w') as f:
