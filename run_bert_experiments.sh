@@ -31,7 +31,7 @@ declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedis
 
 # All Tasks
 # declare -a tasks=("ArgumentationSentences" "ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
-declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
+# declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
 
 # declare -a models=("KB/bert-base-swedish-cased")
 
@@ -42,7 +42,7 @@ declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweWiC" "DaLAJ" "SweWinograd" 
 # declare -a tasks=("SweWiC")
 # declare -a tasks=("SweWinograd")
 
-# declare -a tasks=("SweFAQ")
+declare -a tasks=("SweFAQ")
 # declare -a tasks=("ArgumentationSentences")
 
 # Loop through models
