@@ -8,7 +8,7 @@ from collect_results.collect_model_metrics import create_and_load_model_dicts
 TEST_SCORES = True
 INCLUDE_GPT = False
 
-DO_ROUNDING = True
+DO_ROUNDING = False
 
 
 def avg_distance_from_max(metrics):

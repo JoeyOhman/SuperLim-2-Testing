@@ -115,38 +115,38 @@ after the experiments are done. This is done automatically in the `BertExperimen
 All tasks are evaluated using the Krippendorff Alpha metric (nominal for classification, and interval for regression).
 
 ### Evaluation Results
-| Model                                        |       ABSA |     DaLAJ |     SweMNLI |   SweParaphrase |     SweWiC |   SweWinograd |   Swedish FAQ |      Avg ↑ |
-|----------------------------------------------|------------|-----------|-------------|-----------------|------------|---------------|---------------|------------|
-| KBLab/megatron-bert-large-swedish-cased-165k |  0.57283   |  0.727593 |  0.776482   |       0.909077  |  0.308667  |    0.258708   |    0.892967   |  0.635189  |
-| AI-Nordics/bert-large-swedish-cased          |  0.534861  |  0.716007 |  0.746819   |       0.895624  |  0.285408  |    0.240471   |    0.864126   |  0.611902  |
-| KB/bert-base-swedish-cased                   |  0.52187   |  0.715983 |  0.720911   |       0.900723  |  0.408507  |    0.188203   |    0.737305   |  0.599072  |
-| KBLab/megatron-bert-base-swedish-cased-600k  |  0.503377  |  0.690426 |  0.744255   |       0.895426  |  0.291889  |    0.179137   |    0.873585   |  0.59687   |
-| xlm-roberta-large                            |  0.558885  |  0.71126  |  0.783054   |       0.908835  |  0.34125   |    0.151711   |    0.6791     |  0.590585  |
-| NbAiLab/nb-bert-base                         |  0.456362  |  0.638692 |  0.717407   |       0.879765  |  0.351611  |    0.177085   |    0.707324   |  0.561178  |
-| KBLab/bert-base-swedish-cased-new            |  0.477748  |  0.726241 |  0.727923   |       0.812842  |  0.225232  |    0.0651066  |    0.610978   |  0.520867  |
-| xlm-roberta-base                             |  0.402649  |  0.671511 |  0.720407   |       0.871642  |  0.253254  |   -0.251163   |    0.619978   |  0.469754  |
-| SVM                                          |  0.336347  |  0.501149 |  0.126261   |       0.173238  |  0.012941  |    0.0981801  |    0.0282215  |  0.182334  |
-| Decision Tree                                |  0.210584  |  0.294933 |  0.143506   |       0.248115  |  0.0405762 |    0.0307165  |    0.0185908  |  0.141003  |
-| Random                                       | -0.0566656 |  0.022797 |  0.00267875 |      -0.0506558 |  0.0568082 |   -0.00417216 |   -0.0959506  | -0.01788   |
-| Random Forest                                |  0.0120151 | -0.31043  | -0.255086   |       0.160169  |  0.0272561 |   -0.251163   |    0.00856598 | -0.0869533 |
-| MaxFreq/Avg                                  | -0.0309908 | -0.347135 | -0.337699   |      -0.0242883 | -0.332     |   -0.251163   |   -0.316185   | -0.234209  |
+| Model                                        |       ABSA |   Argumentation |      DaLAJ |     SweMNLI |   SweParaphrase |     SweWiC |   SweWinograd |   Swedish FAQ |      Avg ↑ |
+|----------------------------------------------|------------|-----------------|------------|-------------|-----------------|------------|---------------|---------------|------------|
+| KBLab/megatron-bert-large-swedish-cased-165k |  0.571564  |      0.946352   |  0.727593  |  0.776482   |       0.908897  |  0.312644  |     0.258708  |    0.883748   |  0.673248  |
+| AI-Nordics/bert-large-swedish-cased          |  0.533768  |      0.936037   |  0.716007  |  0.746819   |       0.895458  |  0.289614  |     0.240471  |    0.83509    |  0.649158  |
+| KB/bert-base-swedish-cased                   |  0.513309  |      0.929816   |  0.715983  |  0.720911   |       0.900527  |  0.408507  |     0.188203  |    0.747808   |  0.640633  |
+| KBLab/megatron-bert-base-swedish-cased-600k  |  0.497364  |      0.936032   |  0.690426  |  0.744255   |       0.895231  |  0.299891  |     0.179137  |    0.835171   |  0.634688  |
+| xlm-roberta-large                            |  0.554599  |      0.933846   |  0.71126   |  0.783054   |       0.908649  |  0.345008  |     0.151711  |    0.679484   |  0.633452  |
+| NbAiLab/nb-bert-base                         |  0.440776  |      0.923843   |  0.638692  |  0.717407   |       0.87952   |  0.351808  |     0.177085  |    0.718147   |  0.60591   |
+| KBLab/bert-base-swedish-cased-new            |  0.476216  |      0.915303   |  0.726241  |  0.727923   |       0.812494  |  0.225232  |     0.0651066 |    0.553061   |  0.562697  |
+| xlm-roberta-base                             |  0.398698  |      0.917526   |  0.671511  |  0.720407   |       0.871351  |  0.253994  |    -0.251163  |    0.619826   |  0.525269  |
+| SVM                                          |  0.336347  |      0.906789   |  0.501149  |  0.126261   |       0.175726  |  0.012941  |     0.0981801 |    0.0473189  |  0.275589  |
+| Decision Tree                                |  0.206274  |      0.862748   |  0.298952  |  0.14797    |       0.223647  |  0.0405762 |    -0.0220252 |   -0.02735    |  0.216349  |
+| Random                                       | -0.0566656 |      0.00489102 | -0.0357937 |  0.00267875 |      -0.033005  |  0.0568082 |     0.0924728 |   -0.118317   | -0.0108663 |
+| Random Forest                                |  0.0120151 |     -0.256239   | -0.31043   | -0.255086   |       0.159126  |  0.0272561 |    -0.251163  |    0.00746468 | -0.108382  |
+| MaxFreq/Avg                                  | -0.0309908 |     -0.256239   | -0.347135  | -0.343683   |      -0.0246646 | -0.332     |    -0.251163  |   -0.316185   | -0.237757  |
 
 ### Test Results
-| Model                                        |        ABSA |       DaLAJ |      SweMNLI |   SweParaphrase |      SweWiC |   SweWinograd |   Swedish FAQ |      Avg ↑ |
-|----------------------------------------------|-------------|-------------|--------------|-----------------|-------------|---------------|---------------|------------|
-| KBLab/megatron-bert-large-swedish-cased-165k |  0.509004   |  0.753261   |  0.231612    |      0.873908   |  0.30598    |     0.188953  |     0.796635  |  0.522765  |
-| AI-Nordics/bert-large-swedish-cased          |  0.481386   |  0.745449   |  0.240594    |      0.862353   |  0.316298   |     0.191522  |     0.709803  |  0.506772  |
-| KB/bert-base-swedish-cased                   |  0.521762   |  0.739715   |  0.179116    |      0.844902   |  0.37619    |     0.139458  |     0.622103  |  0.489035  |
-| xlm-roberta-large                            |  0.518696   |  0.737508   |  0.20472     |      0.881723   |  0.369683   |     0.0806007 |     0.563868  |  0.479543  |
-| KBLab/megatron-bert-base-swedish-cased-600k  |  0.451832   |  0.718029   |  0.217683    |      0.866851   |  0.28297    |     0.0614488 |     0.748954  |  0.478253  |
-| NbAiLab/nb-bert-base                         |  0.392885   |  0.64446    |  0.171583    |      0.822682   |  0.317545   |     0.120361  |     0.68027   |  0.449969  |
-| KBLab/bert-base-swedish-cased-new            |  0.428989   |  0.753263   |  0.16292     |      0.75478    |  0.140347   |     0.0420433 |     0.457718  |  0.391437  |
-| xlm-roberta-base                             |  0.364267   |  0.700577   |  0.185628    |      0.81276    |  0.182248   |    -0.177215  |     0.455751  |  0.360574  |
-| SVM                                          |  0.285916   |  0.517739   |  0.000204149 |      0.239667   |  0.0422635  |     0.0549607 |    -0.0185516 |  0.160314  |
-| Decision Tree                                |  0.139739   |  0.275261   |  0.0190077   |      0.184487   |  0.0398626  |    -0.0586309 |     0.0253913 |  0.0893024 |
-| Random                                       |  0.00783217 |  0.00308632 | -0.0906326   |     -0.00659552 | -0.00954447 |     0.0165235 |    -0.13896   | -0.0311843 |
-| Random Forest                                |  0.00537142 | -0.312481   | -0.411051    |      0.144037   |  0.00334587 |    -0.177215  |     0.0126684 | -0.105046  |
-| MaxFreq/Avg                                  | -0.0517904  | -0.340028   | -0.534511    |     -0.00149617 | -0.332667   |    -0.177215  |    -0.30954   | -0.249607  |
+| Model                                        |        ABSA |   Argumentation |       DaLAJ |      SweMNLI |   SweParaphrase |      SweWiC |   SweWinograd |   Swedish FAQ |      Avg ↑ |
+|----------------------------------------------|-------------|-----------------|-------------|--------------|-----------------|-------------|---------------|---------------|------------|
+| KBLab/megatron-bert-large-swedish-cased-165k |  0.508299   |       0.627597  |  0.753261   |  0.231612    |      0.873878   |  0.307947   |     0.188953  |     0.777436  |  0.533623  |
+| AI-Nordics/bert-large-swedish-cased          |  0.480036   |       0.563173  |  0.745449   |  0.240594    |      0.862311   |  0.316317   |     0.191522  |     0.718673  |  0.51476   |
+| KB/bert-base-swedish-cased                   |  0.529183   |       0.555028  |  0.739715   |  0.179116    |      0.844865   |  0.37619    |     0.139458  |     0.640648  |  0.500525  |
+| xlm-roberta-large                            |  0.51631    |       0.583698  |  0.737508   |  0.20472     |      0.881687   |  0.3672     |     0.0806007 |     0.583791  |  0.494439  |
+| KBLab/megatron-bert-base-swedish-cased-600k  |  0.449322   |       0.562494  |  0.718029   |  0.217683    |      0.866812   |  0.277146   |     0.0614488 |     0.709154  |  0.482761  |
+| NbAiLab/nb-bert-base                         |  0.389723   |       0.540602  |  0.64446    |  0.171583    |      0.822616   |  0.325909   |     0.120361  |     0.659844  |  0.459387  |
+| KBLab/bert-base-swedish-cased-new            |  0.427938   |       0.553602  |  0.753263   |  0.16292     |      0.754713   |  0.140347   |     0.0420433 |     0.446627  |  0.410182  |
+| xlm-roberta-base                             |  0.365947   |       0.497157  |  0.700577   |  0.185628    |      0.812797   |  0.181145   |    -0.177215  |     0.473112  |  0.379893  |
+| SVM                                          |  0.285916   |       0.353759  |  0.517739   |  0.000204149 |      0.23909    |  0.0422635  |     0.0549607 |     0.0381895 |  0.191515  |
+| Decision Tree                                |  0.117238   |       0.155629  |  0.268636   |  0.0132697   |      0.199644   |  0.0398626  |    -0.24      |     0.0399946 |  0.0742843 |
+| Random                                       |  0.00783217 |       0.0132383 |  0.00702486 | -0.0906326   |     -0.0427819  | -0.00954447 |     0.0806007 |    -0.150356  | -0.0230774 |
+| Random Forest                                |  0.00537142 |      -0.272389  | -0.312481   | -0.411051    |      0.142812   |  0.00334587 |    -0.177215  |     0.0318551 | -0.123719  |
+| MaxFreq/Avg                                  | -0.0517904  |      -0.272389  | -0.340028   | -0.433837    |     -0.00149459 | -0.332667   |    -0.177215  |    -0.309699  | -0.23989   |
 
 ### SweWinogender Results
 
@@ -203,6 +203,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 2e-05 |   16 | 0.0120759  |
+| Argumentation | 1e-05 |   32 | 0.00375441 |
 | DaLAJ         | 4e-05 |   32 | 0.0138314  |
 | SweMNLI       | 1e-05 |   16 | 0.00832644 |
 | SweParaphrase | 3e-05 |   16 | 0.00558327 |
@@ -215,6 +216,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 2e-05 |   16 | 0.02115    |
+| Argumentation | 3e-05 |   32 | 0.00774597 |
 | DaLAJ         | 2e-05 |   32 | 0.00690644 |
 | SweMNLI       | 1e-05 |   32 | 0.0118903  |
 | SweParaphrase | 4e-05 |   32 | 0.00267101 |
@@ -227,6 +229,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 2e-05 |   16 | 0.010503   |
+| Argumentation | 4e-05 |   32 | 0.463319   |
 | DaLAJ         | 2e-05 |   16 | 0.00939234 |
 | SweMNLI       | 1e-05 |   16 | 0.00648224 |
 | SweParaphrase | 4e-05 |   16 | 0.0423114  |
@@ -239,6 +242,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 4e-05 |   16 | 0.0215247  |
+| Argumentation | 3e-05 |   16 | 0.0777753  |
 | DaLAJ         | 4e-05 |   16 | 0.0171051  |
 | SweMNLI       | 1e-05 |   16 | 0.00194938 |
 | SweParaphrase | 4e-05 |   16 | 0.00612823 |
@@ -251,6 +255,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 3e-05 |   16 | 0.0126327  |
+| Argumentation | 4e-05 |   16 | 0.0226433  |
 | DaLAJ         | 3e-05 |   32 | 0.0174812  |
 | SweMNLI       | 1e-05 |   32 | 0.00384093 |
 | SweParaphrase | 4e-05 |   16 | 0.00475201 |
@@ -263,6 +268,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 4e-05 |   16 | 0.0263801  |
+| Argumentation | 3e-05 |   16 | 0.0194445  |
 | DaLAJ         | 1e-05 |   16 | 0.00804185 |
 | SweMNLI       | 1e-05 |   16 | 0.0108116  |
 | SweParaphrase | 4e-05 |   32 | 0.00655906 |
@@ -275,6 +281,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 4e-05 |   16 | 0.0325399  |
+| Argumentation | 2e-05 |   16 | 0.029516   |
 | DaLAJ         | 2e-05 |   32 | 0.0173028  |
 | SweMNLI       | 1e-05 |   16 | 0.0144903  |
 | SweParaphrase | 1e-05 |   16 | 0.00433707 |
@@ -287,6 +294,7 @@ Below follow the selected Hyperparameters for each model and task, along with a 
 | Task          |    LR |   BS |    hps std |
 |---------------|-------|------|------------|
 | ABSA          | 2e-05 |   16 | 0.240555   |
+| Argumentation | 3e-05 |   32 | 0.512098   |
 | DaLAJ         | 1e-05 |   32 | 0.477851   |
 | SweMNLI       | 1e-05 |   32 | 0.471841   |
 | SweParaphrase | 1e-05 |   16 | 0.00389993 |
@@ -301,14 +309,14 @@ The following table shows the average standard deviation of the hyperparameter c
 
 | Model                                        |   avg std |
 |----------------------------------------------|-----------|
-| AI-Nordics/bert-large-swedish-cased          | 0.0146587 |
-| KBLab/megatron-bert-large-swedish-cased-165k | 0.017969  |
-| KB/bert-base-swedish-cased                   | 0.0202202 |
-| KBLab/megatron-bert-base-swedish-cased-600k  | 0.0285161 |
-| NbAiLab/nb-bert-base                         | 0.0619795 |
-| KBLab/bert-base-swedish-cased-new            | 0.0739355 |
-| xlm-roberta-base                             | 0.0934135 |
-| xlm-roberta-large                            | 0.298174  |
+| AI-Nordics/bert-large-swedish-cased          | 0.0132957 |
+| KBLab/megatron-bert-large-swedish-cased-165k | 0.0185533 |
+| KB/bert-base-swedish-cased                   | 0.018661  |
+| KBLab/megatron-bert-base-swedish-cased-600k  | 0.0346735 |
+| NbAiLab/nb-bert-base                         | 0.0566626 |
+| xlm-roberta-base                             | 0.0854263 |
+| KBLab/bert-base-swedish-cased-new            | 0.122608  |
+| xlm-roberta-large                            | 0.324914  |
 
 
 ### Average Mean Distance to Max Metric
@@ -318,14 +326,14 @@ I.e. for each task hyperparameter search, take the mean of the metric distances 
 
 | Model                                        |   avg mean distance |
 |----------------------------------------------|---------------------|
-| KBLab/megatron-bert-large-swedish-cased-165k |           0.0249956 |
-| AI-Nordics/bert-large-swedish-cased          |           0.026842  |
-| KB/bert-base-swedish-cased                   |           0.0322925 |
-| KBLab/megatron-bert-base-swedish-cased-600k  |           0.0442349 |
-| NbAiLab/nb-bert-base                         |           0.0521342 |
-| KBLab/bert-base-swedish-cased-new            |           0.0709957 |
-| xlm-roberta-base                             |           0.0952137 |
-| xlm-roberta-large                            |           0.360486  |
+| KBLab/megatron-bert-large-swedish-cased-165k |           0.0242377 |
+| AI-Nordics/bert-large-swedish-cased          |           0.0243757 |
+| KB/bert-base-swedish-cased                   |           0.0294655 |
+| KBLab/megatron-bert-base-swedish-cased-600k  |           0.0472022 |
+| NbAiLab/nb-bert-base                         |           0.0486684 |
+| xlm-roberta-base                             |           0.0871857 |
+| KBLab/bert-base-swedish-cased-new            |           0.122801  |
+| xlm-roberta-large                            |           0.35873   |
 
 
 ## Notes / Deviations
@@ -337,4 +345,4 @@ Traditional ML baselines take a random answer from the candidates that the model
 
 ### SweMNLI Traditional ML baselines
 For these traditional ML baselines, only 5% (20,000 samples) of the training set is used for training. 
-This did not seem to have a noticable effect on the end performance, and the motivation for this was to reduce the training time.
+This did not seem to have a noticeable effect on the end performance, and the motivation for this was to reduce the training time.

@@ -4,7 +4,7 @@
 DEBUG=1
 
 # EVALUATE_ONLY will load existing metrics json and fine-tuned model, and overwrite the metrics json and predictions
-EVALUATE_ONLY=1
+EVALUATE_ONLY=0
 
 
 # Only use wandb if not debugging
@@ -35,12 +35,12 @@ mkdir -p logs
 declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedish-cased-600k" "KBLab/bert-base-swedish-cased-new" "xlm-roberta-base" "NbAiLab/nb-bert-base" "AI-Nordics/bert-large-swedish-cased" "KBLab/megatron-bert-large-swedish-cased-165k" "xlm-roberta-large")
 
 # All Tasks
-# declare -a tasks=("ArgumentationSentences" "ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
+declare -a tasks=("ArgumentationSentences" "ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
 # declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
 
 # Overwrite for single model or task
 # declare -a models=("KB/bert-base-swedish-cased")
-declare -a tasks=("ABSAbank-Imm" "SweParaphrase")
+# declare -a tasks=("ABSAbank-Imm")
 
 # Loop through models
 for model in "${models[@]}"
