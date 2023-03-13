@@ -124,8 +124,8 @@ metric_to_compute_fun = {
     # "spearmanr": _compute_metrics_normalized_spearmanr,
     # "rmse_spearmanr": _compute_metrics_rmse_and_normalized_spearmanr,
     "krippendorff_nominal": _compute_metrics_krippendorff_classification,
-    # "krippendorff_interval": _compute_metrics_krippendorff_regression,
-    "krippendorff_interval": _compute_metrics_krippendorff_regression_gerlof,
+    "krippendorff_interval": _compute_metrics_krippendorff_regression,
+    # "krippendorff_interval": _compute_metrics_krippendorff_regression_gerlof,
 }
 
 if __name__ == '__main__':

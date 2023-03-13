@@ -19,11 +19,14 @@ TASK_NAMES = [
     "Swedish Analogy",
     "SuperSim",
     "ABSA",
+    "Argumentation",
+    "argumentation-sentences"
 ]
 
 TASK_NAME_MAP = {
     "ABSAbank-Imm": "ABSA",
-    "SweFAQ": "Swedish FAQ"
+    "SweFAQ": "Swedish FAQ",
+    "ArgumentationSentences": "argumentation-sentences"
 }
 
 MODEL_SIZES = load_model_sizes()

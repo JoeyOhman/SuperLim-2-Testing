@@ -54,6 +54,8 @@ The tasks are named slightly different in this repository since it was developed
 See `task_to_info_dict` in `Experiment.py` for the task names used. When the final results files are created, these 
 names are mapped to the official names.
 
+Note: Winogender will be evaluated automatically when training/evaluating with SweMNLI.
+
 
 <br>
 

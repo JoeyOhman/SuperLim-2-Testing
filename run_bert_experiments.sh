@@ -1,10 +1,15 @@
 #!/bin/bash
 
+# DEBUG will print directly to console instead of log files, and skip using wandb
 DEBUG=1
+
+# EVALUATE_ONLY will load existing metrics json and fine-tuned model, and overwrite the metrics json and predictions
 EVALUATE_ONLY=1
+
 
 # Only use wandb if not debugging
 if [ "$DEBUG" == 0 ]; then
+  # EDIT THIS TO YOUR OWN WANDB DETAILS & AVAILABLE GPUs
   export WANDB_ENTITY=joeyohman
   export WANDB_PROJECT=SuperLim2023
   api_key=$(cat api_wandb_key.txt)
@@ -33,17 +38,9 @@ declare -a models=("KB/bert-base-swedish-cased" "KBLab/megatron-bert-base-swedis
 # declare -a tasks=("ArgumentationSentences" "ABSAbank-Imm" "SweParaphrase" "SweFAQ" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
 # declare -a tasks=("ABSAbank-Imm" "SweParaphrase" "SweWiC" "DaLAJ" "SweWinograd" "SweMNLI")
 
+# Overwrite for single model or task
 # declare -a models=("KB/bert-base-swedish-cased")
-
-# declare -a tasks=("DaLAJ")
-# declare -a tasks=("SweParaphrase")
-# declare -a tasks=("ABSAbank-Imm")
-# declare -a tasks=("SweMNLI")
-# declare -a tasks=("SweWiC")
-# declare -a tasks=("SweWinograd")
-
-declare -a tasks=("SweFAQ")
-# declare -a tasks=("ArgumentationSentences")
+declare -a tasks=("ABSAbank-Imm" "SweParaphrase")
 
 # Loop through models
 for model in "${models[@]}"

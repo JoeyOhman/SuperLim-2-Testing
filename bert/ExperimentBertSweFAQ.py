@@ -42,54 +42,24 @@ class ExperimentBertSweFAQ(ExperimentBert):
 
     def _predict_sample_cross(self, model, question, answers):
         probs = []
-        binary_preds = []
         for answer in answers:
             # encoded = tokenizer(question, answer, return_tensors="pt", truncation=True, max_length=self.max_seq_len)
             encoded = self.batch_tokenize([question], [answer], ret_tensors="pt")
             encoded = encoded.to(self.device)
             logits = model(**encoded).logits[0].cpu().detach().numpy()
             probs.append(logits[1])
-            binary_preds.append(np.argmax(logits))
 
         prediction = np.argmax(probs)
-        return prediction, binary_preds
+        return prediction
 
     def _predict_dataset_cross(self, tokenizer, model, dataset):
         predictions, labels = [], []
-        binary_correct = []
-        binary_num_yes = 0
-        binary_num_tot = 0
         for sample in dataset:
             question, answers, label = sample["question"], sample["answer"], sample["labels"]
-            # print("Question:")
-            # print(question)
-            # print("Answers:")
-            # print("\n\n".join([str(i) + ": " + a for i, a in enumerate(answers)]))
-            # print("Label:")
-            # print(label)
-            # print("Correct answer:")
-            # print(answers[label])
-            # exit()
-            prediction, binary_preds = self._predict_sample_cross(model, question, answers)
-
-            for idx, bin_pred in enumerate(binary_preds):
-                if label == idx:  # this should be 1
-                    correct = bin_pred == 1
-                else:  # this should be 0
-                    correct = bin_pred == 0
-
-                if bin_pred == 1:
-                    binary_num_yes += 1
-                binary_num_tot += 1
-
-                binary_correct.append(1 if correct else 0)
+            prediction = self._predict_sample_cross(model, question, answers)
 
             predictions.append(prediction)
             labels.append(label)
-
-        binary_accuracy = sum(binary_correct) / len(binary_correct)
-        print("****************Binary accuracy:", binary_accuracy)
-        print("################Binary fraction yes:", binary_num_yes / binary_num_tot)
 
         metric_dict = self._compute_metrics((predictions, labels))
         return metric_dict, predictions
